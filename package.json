@@ -1,0 +1,33 @@
+{
+  "name": "room-assignment-system",
+  "version": "1.0.0",
+  "description": "숙소 방배정 및 회원 관리 시스템",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd backend && npm run dev",
+    "client:dev": "cd frontend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "keywords": [
+    "room-assignment",
+    "admin",
+    "nodejs",
+    "react"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@tailwindcss/forms": "^0.5.10",
+    "autoprefixer": "^10.4.21",
+    "axios": "^1.9.0",
+    "bcryptjs": "^3.0.2",
+    "postcss": "^8.5.5",
+    "react-router-dom": "^7.6.2",
+    "tailwindcss": "^4.1.10"
+  }
+}
