@@ -168,4 +168,4 @@ npm run client:dev  # 프론트엔드만
 ---
 
 **개발자**: hazel55  
-**프로젝트 링크**: [https://github.com/hazel55/quick-room-booking](https://github.com/hazel55/quick-room-booking) 
+**프로젝트 링크**: [https://github.com/hazel55/quick-room-booking](https://github.com/hazel55/quick-room-booking)
