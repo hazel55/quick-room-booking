@@ -5,6 +5,7 @@ const Room = require('../models/Room');
 const Reservation = require('../models/Reservation');
 const ReservationHistory = require('../models/ReservationHistory');
 const User = require('../models/User');
+const ReservationSettings = require('../models/ReservationSettings');
 const ReservationService = require('../services/ReservationServiceNoTransaction');
 const { protect, admin } = require('../middleware/auth');
 
@@ -46,6 +47,28 @@ router.post('/', protect, [
       return res.status(400).json({
         message: '입력 정보를 확인해주세요',
         errors: errors.array()
+      });
+    }
+
+    // 예약 오픈 시간 확인
+    const reservationSettings = await ReservationSettings.getCurrentSettings();
+    if (reservationSettings && !reservationSettings.isOpenNow()) {
+      const timeUntilOpen = reservationSettings.getTimeUntilOpen();
+      const openDateTime = new Date(reservationSettings.openDateTime);
+      
+      return res.status(403).json({
+        success: false,
+        message: '아직 예약 오픈 시간이 아닙니다.',
+        openDateTime: openDateTime.toISOString(),
+        timeUntilOpen: timeUntilOpen,
+        openDateTimeKorean: openDateTime.toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        })
       });
     }
 

@@ -33,6 +33,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/rooms', require('./routes/rooms'));
 app.use('/api/reservations', require('./routes/reservations'));
+app.use('/api/reservation-settings', require('./routes/reservationSettings'));
 
 // Health check
 app.get('/api/health', (req, res) => {
