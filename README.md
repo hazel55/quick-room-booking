@@ -31,6 +31,7 @@
 - **엑셀 다운로드**: 회원 정보 엑셀 파일 다운로드
 - **방 배정**: 관리자 직접 방 배정 기능
 - **통계 현황**: 배정 현황 및 통계 정보
+- **오픈시간 설정**: 예약 서비스 오픈 일시 설정 기능
 
 ## 🛠 기술 스택
 
@@ -149,21 +150,9 @@ npm run client:dev  # 프론트엔드만
 - **방 관리**: 방 등록, 수정, 배정 관리
 - **예약 관리**: 전체 예약 현황 및 통계
 
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## 📄 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-
-## 📞 문의
-
-프로젝트에 대한 문의사항이나 버그 리포트는 GitHub Issues를 통해 제출해 주세요.
 
 ---
 
