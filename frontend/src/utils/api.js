@@ -1,6 +1,28 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+// 환경별 API URL 설정
+const getApiBaseUrl = () => {
+  // 환경변수가 있으면 우선 사용
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // 현재 호스트 기반으로 자동 결정
+  const currentHost = window.location.hostname;
+  
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    return 'http://localhost:3001/api';
+  } else if (currentHost === 'snl.blifeinc.com') {
+    return 'http://snl.blifeinc.com/api';
+  } else {
+    // 기본값
+    return 'http://localhost:3001/api';
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+console.log('🌐 API Base URL:', API_BASE_URL);
 
 // Axios 인스턴스 생성
 const api = axios.create({
