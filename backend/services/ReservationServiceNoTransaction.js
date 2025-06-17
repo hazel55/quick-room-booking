@@ -252,6 +252,9 @@ class ReservationServiceNoTransaction {
         // 예약이 없는 경우 직접 데이터 정리
         const roomNumber = user.roomAssignment.roomNumber;
 
+        // 방 정보 조회
+        const room = await Room.findOne({ roomNumber: roomNumber });
+        
         // 방에서 사용자 제거
         await Room.updateOne(
           { roomNumber: roomNumber },
@@ -267,6 +270,19 @@ class ReservationServiceNoTransaction {
             'roomAssignment.status': 'pending'
           }
         );
+
+        // 예약 히스토리 기록 (예약이 없는 경우에도)
+        await ReservationHistory.create({
+          user: userId,
+          room: room ? room._id : null,
+          reservation: null, // 예약이 없는 경우
+          action: 'cancelled',
+          bedNumber: null, // 침대 번호를 알 수 없는 경우
+          reason: '관리자에 의한 방 배정 취소 (방 비활성화)',
+          performedBy: adminId,
+          ipAddress: requestInfo.ipAddress,
+          userAgent: requestInfo.userAgent
+        });
 
         return { 
           success: true, 

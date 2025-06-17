@@ -186,11 +186,21 @@ router.put('/:id', protect, admin, async (req, res) => {
       const User = require('../models/User');
       const ReservationServiceNoTransaction = require('../services/ReservationServiceNoTransaction');
       
+      // 요청 정보 수집
+      const requestInfo = {
+        ipAddress: req.ip || req.connection.remoteAddress,
+        userAgent: req.get('User-Agent')
+      };
+      
       // 배정된 모든 사용자들의 방 배정 취소
       for (const occupant of room.occupants) {
         if (occupant.user) {
           try {
-            await ReservationServiceNoTransaction.cancelRoomAssignmentByAdmin(occupant.user.toString());
+            await ReservationServiceNoTransaction.cancelRoomAssignmentByAdmin(
+              occupant.user.toString(), 
+              req.user.id, // 관리자 ID 추가
+              requestInfo  // 요청 정보 추가
+            );
           } catch (error) {
             console.error(`사용자 ${occupant.user} 방 배정 취소 실패:`, error);
           }

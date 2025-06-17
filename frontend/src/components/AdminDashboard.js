@@ -469,6 +469,36 @@ const AdminDashboard = () => {
     }
   };
 
+  // 데이터 정합성 복구
+  const repairDataConsistency = async () => {
+    try {
+      const confirmed = window.confirm(
+        '데이터 정합성을 복구하시겠습니까?\n\n이 작업은 다음을 수행합니다:\n' +
+        '• 예약 데이터와 사용자 배정 정보 동기화\n' +
+        '• Dashboard와 My-Reservation 페이지 정보 일치\n' +
+        '• 불일치하는 데이터 자동 수정'
+      );
+      if (!confirmed) return;
+
+      setLoading(true);
+      const response = await userAPI.repairDataConsistency();
+      
+      if (response.data.success) {
+        alert(response.data.message);
+        // 데이터 새로고침
+        loadUsers();
+        loadRooms();
+      } else {
+        alert('데이터 정합성 복구에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('데이터 정합성 복구 실패:', error);
+      alert('데이터 정합성 복구에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'users') {
       loadUsers();
@@ -1099,6 +1129,30 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+            {/* 시스템 관리 */}
+            <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">시스템 관리</h3>
+              
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div>
+                    <h4 className="text-sm font-semibold text-yellow-900">데이터 정합성 복구</h4>
+                    <p className="text-sm text-yellow-800 mt-1">
+                      Dashboard와 My-Reservation 페이지의 예약 정보가 일치하지 않는 경우 사용하세요.
+                      예약 데이터와 사용자 배정 정보를 동기화합니다.
+                    </p>
+                  </div>
+                  <button
+                    onClick={repairDataConsistency}
+                    disabled={loading}
+                    className="bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {loading ? '처리 중...' : '정합성 복구'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* 도움말 */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="text-sm font-semibold text-blue-900 mb-2">💡 사용 안내</h4>
@@ -1107,6 +1161,7 @@ const AdminDashboard = () => {
                 <li>• <strong>즉시 오픈:</strong> 체크하면 설정한 일시와 관계없이 바로 예약이 가능합니다.</li>
                 <li>• <strong>빠른 토글:</strong> 위의 토글 버튼으로 예약 상태를 빠르게 변경할 수 있습니다.</li>
                 <li>• <strong>사용자 화면:</strong> 예약이 마감된 상태에서는 사용자가 예약 버튼을 클릭할 수 없습니다.</li>
+                <li>• <strong>데이터 정합성 복구:</strong> 예약 정보가 일치하지 않을 때 자동으로 수정합니다.</li>
               </ul>
             </div>
           </div>

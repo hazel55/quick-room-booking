@@ -75,6 +75,7 @@ export const userAPI = {
   cancelRoomAssignment: (id) => api.delete(`/users/${id}/room-assignment`),
   searchUsers: (query, excludeAssigned = true) => 
     api.get(`/users/search?query=${encodeURIComponent(query)}&excludeAssigned=${excludeAssigned}`),
+  repairDataConsistency: () => api.post('/reservations/repair-consistency'),
 };
 
 // 방 관리 API (관리자용)

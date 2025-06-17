@@ -390,4 +390,26 @@ router.get('/history', protect, async (req, res) => {
   }
 });
 
+// @desc    데이터 정합성 복구 (관리자 전용)
+// @route   POST /api/reservations/repair-consistency
+// @access  Private/Admin
+router.post('/repair-consistency', protect, admin, async (req, res) => {
+  try {
+    const result = await ReservationService.repairDataConsistency();
+    
+    res.json({
+      success: true,
+      message: `데이터 정합성 복구가 완료되었습니다. ${result.repairedCount}개 항목이 수정되었습니다.`,
+      repairedCount: result.repairedCount
+    });
+
+  } catch (error) {
+    console.error('데이터 정합성 복구 오류:', error);
+    res.status(500).json({ 
+      message: '데이터 정합성 복구 중 오류가 발생했습니다',
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router; 

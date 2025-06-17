@@ -1,11 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 import '../styles/dashboard.css';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [reservation, setReservation] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 예약 정보 로드
+  useEffect(() => {
+    fetchMyReservation();
+  }, []);
+
+  const fetchMyReservation = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/reservations/my');
+      
+      if (response.data.success) {
+        setReservation(response.data.data);
+      }
+    } catch (err) {
+      console.error('예약 정보 조회 오류:', err);
+      // 404는 예약이 없는 상태이므로 오류로 처리하지 않음
+      if (err.response?.status !== 404) {
+        console.error('예약 정보를 불러오는데 실패했습니다.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -121,23 +148,24 @@ const Dashboard = () => {
               방 배정 현황
             </h2>
             <div className="text-center py-8">
-              {user?.roomAssignment?.roomNumber ? (
+              {loading ? (
+                <div className="text-gray-400 text-lg mb-2">
+                  예약 정보를 불러오는 중...
+                </div>
+              ) : reservation ? (
                 <div>
                   <div className="text-3xl font-bold text-indigo-600 mb-2">
-                    {user.roomAssignment.roomNumber}호
+                    {reservation.room.roomNumber}호
                   </div>
                   <div className="text-sm text-gray-600 mb-1">
-                    상태: <span className="font-medium capitalize">{
-                      user.roomAssignment.status === 'pending' ? '대기중' :
-                      user.roomAssignment.status === 'assigned' ? '배정됨' :
-                      user.roomAssignment.status === 'checked-in' ? '체크인' :
-                      user.roomAssignment.status === 'checked-out' ? '체크아웃' :
-                      user.roomAssignment.status
-                    }</span>
+                    침대 번호: <span className="font-medium">{reservation.bedNumber}번</span>
                   </div>
-                  {user.roomAssignment.assignedAt && (
+                  <div className="text-sm text-gray-600 mb-1">
+                    상태: <span className="font-medium text-green-600">예약됨</span>
+                  </div>
+                  {reservation.createdAt && (
                     <div className="text-xs text-gray-500">
-                      배정일: {new Date(user.roomAssignment.assignedAt).toLocaleDateString()}
+                      예약일: {new Date(reservation.createdAt).toLocaleDateString('ko-KR')}
                     </div>
                   )}
                 </div>
@@ -147,8 +175,14 @@ const Dashboard = () => {
                     아직 방이 배정되지 않았습니다
                   </div>
                   <div className="text-sm text-gray-500">
-                    관리자가 방을 배정해드릴 예정입니다
+                    방을 선택하여 예약해보세요
                   </div>
+                  <button
+                    onClick={() => navigate('/rooms')}
+                    className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+                  >
+                    방 둘러보기
+                  </button>
                 </div>
               )}
             </div>
@@ -156,13 +190,13 @@ const Dashboard = () => {
         </div>
 
         {/* 특별 요청사항 */}
-        {user?.specialRequests && (
+        {reservation?.specialRequests && (
           <div className="mt-6 bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               특별 요청사항
             </h2>
             <p className="text-sm text-gray-700 leading-relaxed">
-              {user.specialRequests}
+              {reservation.specialRequests}
             </p>
           </div>
         )}
