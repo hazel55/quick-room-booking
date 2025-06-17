@@ -2,12 +2,30 @@
 
 /* 헤더 스타일 */
 .dashboard-header {
+  display: flex;                 /* 핵심: 가로 배치 */
+  flex-direction: row;           /* 가로 정렬 */
+  align-items: center;           /* 수직 중앙 정렬 */
+  justify-content: space-between;/* 좌우로 분배(원하는 정렬에 따라 조정) */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 1.5rem;
+  min-height: 64px;              /* 높이 고정(선택) */
 }
 
 .dashboard-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.user-profile {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -84,13 +102,6 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 사용자 프로필 */
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
 .user-avatar {
   width: 2rem;
   height: 2rem;
@@ -138,18 +149,24 @@
 
 /* 모바일 네비게이션 */
 .mobile-nav {
+  display: flex;
+  flex-direction: row;      /* 가로 배치 */
+  align-items: center;      /* 수직 가운데 정렬 */
+  gap: 0.5rem;              /* 버튼 사이 간격 */
   background: white;
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 1rem;
 }
 
 .mobile-nav-button {
+  /* 기존 스타일 유지 */
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   transition: all 0.2s ease;
   border: none;
@@ -247,4 +264,15 @@
     width: 0.875rem;
     height: 0.875rem;
   }
-} 
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 0.5rem;
+    min-height: unset;
+  }
+  .dashboard-nav {
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+}

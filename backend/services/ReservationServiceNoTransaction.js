@@ -41,7 +41,7 @@ class ReservationServiceNoTransaction {
 
       // 침대 번호 유효성 확인
       if (bedNumber > room.capacity) {
-        throw new Error(`유효하지 않은 침대 번호입니다. 1~${room.capacity} 범위에서 선택해주세요.`);
+        throw new Error(`유효하지 않은 번호입니다. 1~${room.capacity} 범위에서 선택해주세요.`);
       }
 
       // 해당 침대가 이미 예약되었는지 확인
@@ -50,7 +50,7 @@ class ReservationServiceNoTransaction {
       );
 
       if (bedOccupied) {
-        throw new Error('이미 예약된 침대입니다. 다른 침대를 선택해주세요.');
+        throw new Error('이미 예약된 번호입니다. 다른 번호를 선택해주세요.');
       }
 
       // 방이 꽉 찼는지 확인

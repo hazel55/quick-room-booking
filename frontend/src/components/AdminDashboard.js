@@ -353,7 +353,7 @@ const AdminDashboard = () => {
       학년: user.grade === 'T' ? '선생님' : user.grade === 'A' ? '관리자' : `${user.grade}학년`,
       성별: user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender,
       배정방: user.roomAssignment?.roomNumber || '미배정',
-      침대번호: user.roomAssignment?.bedNumber || '미배정',
+      배정번호: user.roomAssignment?.bedNumber || '미배정',
       상태: user.roomAssignment?.status === 'pending' ? '대기중' :
             user.roomAssignment?.status === 'assigned' ? '배정됨' :
             user.roomAssignment?.status === 'checked-in' ? '체크인' :
@@ -407,7 +407,7 @@ const AdminDashboard = () => {
   const addUserToRoom = async (userId, bedNumber) => {
     try {
       if (!bedNumber) {
-        alert('침대 번호를 선택해주세요.');
+        alert('배정할 번호를 선택해주세요.');
         return;
       }
 
@@ -417,7 +417,7 @@ const AdminDashboard = () => {
       );
 
       if (isOccupied) {
-        alert('이미 사용 중인 침대 번호입니다.');
+        alert('이미 사용 중인 번호입니다.');
         return;
       }
 
@@ -495,123 +495,81 @@ const AdminDashboard = () => {
   }, [userSearchQuery]);
 
   return (
+
+    
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
       <header className="dashboard-header">
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-8">
-              <div className="dashboard-logo">
-                <div className="dashboard-logo-icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  </svg>
-                </div>
-                <h1 className="dashboard-title">관리자 대시보드</h1>
-              </div>
-              <nav className="hidden md:flex space-x-2">
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="nav-button nav-button-inactive"
-                >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                  </svg>
-                  <span>일반 대시보드</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('users')}
-                  className={`admin-tab-button ${
-                    activeTab === 'users' ? 'admin-tab-active' : 'admin-tab-inactive'
-                  }`}
-                >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                  <span>회원 관리</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('rooms')}
-                  className={`admin-tab-button ${
-                    activeTab === 'rooms' ? 'admin-tab-active' : 'admin-tab-inactive'
-                  }`}
-                >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
-                  </svg>
-                  <span>방 관리</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('settings')}
-                  className={`admin-tab-button ${
-                    activeTab === 'settings' ? 'admin-tab-active' : 'admin-tab-inactive'
-                  }`}
-                >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                  </svg>
-                  <span>예약 설정</span>
-                </button>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="user-profile hidden sm:flex">
-                <div className="user-avatar" style={{background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'}}>
-                  {user?.name?.charAt(0) || 'A'}
-                </div>
-                <span className="user-name">{user?.name}님</span>
-              </div>
-              <button onClick={handleLogout} className="logout-button">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span>로그아웃</span>
-              </button>
-            </div>
+        <div className="dashboard-logo">
+          {/* 로고/타이틀 */}
+          <div className="dashboard-logo-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            </svg>
           </div>
+          <h1 className="dashboard-title">관리자 대시보드</h1>
+        </div>
+        <nav className="dashboard-nav">
+
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`admin-tab-button ${
+              activeTab === 'settings' ? 'admin-tab-active' : 'admin-tab-inactive'
+            }`}
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+            </svg>
+            <span>회원 관리</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('rooms')}
+            className={`admin-tab-button ${
+              activeTab === 'rooms' ? 'admin-tab-active' : 'admin-tab-inactive'
+            }`}
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
+            </svg>
+            <span>방 관리</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`admin-tab-button ${
+              activeTab === 'settings' ? 'admin-tab-active' : 'admin-tab-inactive'
+            }`}
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+            </svg>
+            <span>예약 설정</span>
+          </button>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="nav-button nav-button-active"
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+            </svg>
+            <span>일반 회원 대시보드</span>
+          </button>
+        </nav>
+        <div className="user-profile">
+          {/* 프로필/로그아웃 */}
+          <div className="user-profile hidden sm:flex">
+            <div className="user-avatar" style={{background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'}}>
+              {user?.name?.charAt(0) || 'A'}
+            </div>
+            <span className="user-name">{user?.name}님</span>
+          </div>
+          <button onClick={handleLogout} className="logout-button">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>로그아웃</span>
+          </button>
         </div>
       </header>
-
-      {/* 모바일 탭 네비게이션 */}
-      <div className="mobile-nav md:hidden">
-        <div className="max-w-full mx-auto px-4">
-          <div className="flex space-x-2 overflow-x-auto py-2">
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`mobile-nav-button ${
-                activeTab === 'users' ? 'mobile-nav-button-active' : 'mobile-nav-button-inactive'
-              }`}
-            >
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-              <span>회원 관리</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('rooms')}
-              className={`mobile-nav-button ${
-                activeTab === 'rooms' ? 'mobile-nav-button-active' : 'mobile-nav-button-inactive'
-              }`}
-            >
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
-              </svg>
-              <span>방 관리</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`mobile-nav-button ${
-                activeTab === 'settings' ? 'mobile-nav-button-active' : 'mobile-nav-button-inactive'
-              }`}
-            >
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-              </svg>
-              <span>예약 설정</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* 메인 콘텐츠 */}
       <main className="max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -743,7 +701,7 @@ const AdminDashboard = () => {
                                 <div className="font-medium">{user.roomAssignment.roomNumber}호</div>
                                 {user.roomAssignment.bedNumber && (
                                   <div className="text-xs text-gray-500">
-                                    {user.roomAssignment.bedNumber}번 침대
+                                    {user.roomAssignment.bedNumber}번
                                   </div>
                                 )}
                               </div>
@@ -1270,7 +1228,7 @@ const AdminDashboard = () => {
                     editingRoom.occupants.map((occupant, index) => (
                       <div key={index} className="occupant-item">
                         <div className="occupant-info">
-                          <span className="bed-number">침대 {occupant.bedNumber}번</span>
+                          <span className="bed-number">{occupant.bedNumber}번</span>
                           <span className="user-name">{occupant.user?.name || '이름 없음'}</span>
                           <span className="user-birth">
                             {occupant.user?.birthDate ? 
@@ -1324,17 +1282,17 @@ const AdminDashboard = () => {
                         
                         <div className="search-inputs">
                           <div className="form-group">
-                            <label className="form-label">침대 번호 선택</label>
+                            <label className="form-label">번호 선택</label>
                             <select
                               className="form-select"
                               value={selectedBedNumber}
                               onChange={(e) => setSelectedBedNumber(e.target.value)}
                             >
-                              <option value="">침대 번호 선택</option>
+                              <option value="">번호 선택</option>
                               {Array.from({length: editingRoom.capacity}, (_, i) => i + 1)
                                 .filter(bedNum => !editingRoom.occupants?.some(occ => occ.bedNumber === bedNum))
                                 .map(bedNum => (
-                                  <option key={bedNum} value={bedNum}>{bedNum}번 침대</option>
+                                  <option key={bedNum} value={bedNum}>{bedNum}번</option>
                                 ))
                               }
                             </select>

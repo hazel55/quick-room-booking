@@ -95,7 +95,7 @@ RoomSchema.methods.assignUser = function(userId, bedNumber) {
   // 이미 점유된 침대인지 확인
   const existingOccupant = this.occupants.find(occ => occ.bedNumber === bedNumber);
   if (existingOccupant) {
-    throw new Error('이미 점유된 침대입니다');
+    throw new Error('이미 점유된 번호입니다');
   }
   
   // 방이 꽉 찼는지 확인

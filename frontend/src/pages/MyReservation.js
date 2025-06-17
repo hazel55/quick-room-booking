@@ -206,7 +206,7 @@ const MyReservation = () => {
                   </div>
                 </div>
                 <div className="bed-info">
-                  <span className="bed-number">{reservation.bedNumber}번 침대</span>
+                  <span className="bed-number">{reservation.bedNumber}번</span>
                 </div>
               </div>
 
@@ -292,7 +292,7 @@ const MyReservation = () => {
                       </span>
                       {item.bedNumber && (
                         <span className="bed-info">
-                          {item.bedNumber}번 침대
+                          {item.bedNumber}번
                         </span>
                       )}
                     </div>
@@ -434,7 +434,7 @@ const MyReservation = () => {
                           {roomDetail.occupants.map((occupant, index) => (
                             <div key={index} className="occupant-item">
                               <div className="bed-number">
-                                {occupant.bedNumber}번 침대
+                                {occupant.bedNumber}번
                               </div>
                               <div className="occupant-info">
                                 <span className="name">{occupant.user?.name || '이름 없음'}</span>

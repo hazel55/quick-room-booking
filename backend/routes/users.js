@@ -209,7 +209,7 @@ router.put('/:id/assign-room', protect, admin, async (req, res) => {
     }
 
     if (!bedNumber) {
-      return res.status(400).json({ message: '침대 번호를 입력해주세요' });
+      return res.status(400).json({ message: '번호를 입력해주세요' });
     }
 
     // 1. 사용자 정보 조회
@@ -276,7 +276,7 @@ router.put('/:id/assign-room', protect, admin, async (req, res) => {
     // 5. 침대 번호 유효성 확인
     if (bedNumber > room.capacity || bedNumber < 1) {
       return res.status(400).json({ 
-        message: `유효하지 않은 침대 번호입니다. 1~${room.capacity} 범위에서 선택해주세요.` 
+        message: `유효하지 않은 번호입니다. 1~${room.capacity} 범위에서 선택해주세요.` 
       });
     }
 
@@ -286,7 +286,7 @@ router.put('/:id/assign-room', protect, admin, async (req, res) => {
     );
 
     if (bedOccupied) {
-      return res.status(400).json({ message: '이미 사용 중인 침대입니다.' });
+      return res.status(400).json({ message: '이미 사용 중인 번호입니다.' });
     }
 
     // 7. 방이 꽉 찼는지 확인
@@ -311,7 +311,7 @@ router.put('/:id/assign-room', protect, admin, async (req, res) => {
 
     res.json({
       success: true,
-      message: `${user.name}님이 ${room.roomNumber}호실 ${bedNumber}번 침대에 배정되었습니다`,
+      message: `${user.name}님이 ${room.roomNumber}호실 ${bedNumber} 번에 배정되었습니다`,
       data: result
     });
 

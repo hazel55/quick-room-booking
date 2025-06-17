@@ -13,8 +13,8 @@ const ReservationSchema = new mongoose.Schema({
   },
   bedNumber: {
     type: Number,
-    required: [true, '침대 번호가 필요합니다'],
-    min: [1, '침대 번호는 1 이상이어야 합니다']
+    required: [true, '번호가 필요합니다'],
+    min: [1, '번호는 1 이상이어야 합니다']
   },
   status: {
     type: String,

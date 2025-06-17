@@ -39,7 +39,7 @@ router.get('/my', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, [
   body('roomId', '방 ID를 입력해주세요').notEmpty().isMongoId(),
-  body('bedNumber', '침대 번호를 입력해주세요').isInt({ min: 1 })
+  body('bedNumber', '번호를 입력해주세요').isInt({ min: 1 })
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -104,7 +104,7 @@ router.post('/', protect, [
         return res.status(400).json({ message: '이미 활성 예약이 있습니다' });
       }
       if (error.keyPattern && error.keyPattern.room && error.keyPattern.bedNumber) {
-        return res.status(400).json({ message: '이미 예약된 침대입니다' });
+        return res.status(400).json({ message: '이미 예약된 번호입니다' });
       }
     }
 

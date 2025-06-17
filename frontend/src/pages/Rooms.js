@@ -152,7 +152,7 @@ const Rooms = () => {
 
   const handleReservation = async () => {
     if (!selectedBed) {
-      setError('침대를 선택해주세요.');
+      setError('번호를 선택해주세요.');
       return;
     }
 
@@ -210,7 +210,7 @@ const Rooms = () => {
           }`}
           onClick={() => !isOccupied && setSelectedBed(i)}
         >
-          <div className="bed-number">{i}번 침대</div>
+          <div className="bed-number">{i}번</div>
           {isOccupied && (
             <div className="occupant-info">
               <span className="occupied-label">점유</span>
@@ -242,6 +242,8 @@ const Rooms = () => {
         <div className="page-header">
           <h1>방 목록</h1>
           <p>원하는 방을 선택하여 예약하세요</p>
+          <p>기준 인원 이하로 예약한 경우 추후 다른 방 인원과 통합될 수 있습니다.</p>
+          <p>(예시: 2인실 방에 1명 예약/3인실 방에 2명 예약/4인실 방에 3명 예약 등 인원 미달시 다른 방으로 통합되거나 다른 인원이 들어올 수 있습니다.)</p>
         </div>
 
         {/* 예약 상태 알림 */}
@@ -445,11 +447,11 @@ const Rooms = () => {
                   <p><strong>층:</strong> {selectedRoom.floor}층</p>
                   <p><strong>인실:</strong> {selectedRoom.capacity}인실</p>
                   <p><strong>성별:</strong> {selectedRoom.gender === '공용' ? '공용' : selectedRoom.gender === 'M' ? '남성용' : selectedRoom.gender === 'F' ? '여성용' : selectedRoom.gender}</p>
-                  <p><strong>사용 가능 침대:</strong> {selectedRoom.availableBeds}개</p>
+                  <p><strong>사용 가능 번호:</strong> {selectedRoom.availableBeds}개</p>
                 </div>
 
                 <div className="bed-selection">
-                  <h3>침대 선택</h3>
+                  <h3>번호 선택</h3>
                   <div className="beds-grid">
                     {renderBedStatus(selectedRoom)}
                   </div>
