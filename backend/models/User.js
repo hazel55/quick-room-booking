@@ -68,6 +68,15 @@ const UserSchema = new mongoose.Schema({
     required: [true, '학년을 선택해주세요'],
     enum: ['1', '2', '3', 'T', 'A'] // 1학년, 2학년, 3학년, 선생님, 관리자
   },
+  classNumber: {
+    type: Number,
+    required: [
+      function() { return this.grade !== 'T' && this.grade !== 'A'; },
+      '반을 선택해주세요'
+    ],
+    min: [1, '반은 1 이상이어야 합니다.'],
+    max: [10, '반은 10 이하이어야 합니다.']
+  },
   gender: {
     type: String,
     required: [true, '성별을 선택해주세요'],
@@ -104,11 +113,6 @@ const UserSchema = new mongoose.Schema({
       default: 'pending'
     }
   },
-  emergencyContact: {
-    name: String,
-    phone: String,
-    relationship: String
-  },
   guardianPhone: {
     type: String,
     required: [true, '보호자 전화번호를 입력해주세요'],
@@ -120,6 +124,22 @@ const UserSchema = new mongoose.Schema({
         return /^01[0-9]{9}$/.test(cleanPhone);
       },
       message: '올바른 보호자 전화번호 형식을 입력해주세요 (01로 시작하는 11자리 숫자)'
+    }
+  },
+  guardianRelationship: {
+    type: String,
+    required: [true, '보호자와의 관계를 선택해주세요'],
+    enum: ['부', '모', '조부', '조모', '외조부', '외조모', '형제', '자매', '부모', '형제/자매', '친척', '친구', '기타'],
+    trim: true
+  },
+  retreatConsent: {
+    type: Boolean,
+    required: [true, '수련회 참가 서약서에 동의해주세요'],
+    validate: {
+      validator: function(value) {
+        return value === true;
+      },
+      message: '수련회 참가 서약서에 동의해주세요'
     }
   },
   specialRequests: {
@@ -144,11 +164,6 @@ UserSchema.pre('save', async function(next) {
   // 보호자 전화번호 전처리 (숫자만 저장)
   if (this.isModified('guardianPhone') && this.guardianPhone) {
     this.guardianPhone = this.guardianPhone.replace(/[^0-9]/g, '');
-  }
-
-  // 비상연락처 전화번호 전처리 (숫자만 저장)
-  if (this.isModified('emergencyContact.phone') && this.emergencyContact && this.emergencyContact.phone) {
-    this.emergencyContact.phone = this.emergencyContact.phone.replace(/[^0-9]/g, '');
   }
 
   // 비밀번호 암호화
@@ -199,7 +214,7 @@ UserSchema.virtual('birthDate').get(function() {
     // YYMMDD 형식을 YY-MM-DD로 변환
     return `${birthDate.substring(0, 2)}-${birthDate.substring(2, 4)}-${birthDate.substring(4, 6)}`;
   } catch (error) {
-    // 복호화 실패 시 조용히 null 반환 (로그 제거)
+    console.error('주민등록번호 복호화 실패:', error);
     return null;
   }
 });
@@ -254,18 +269,6 @@ UserSchema.virtual('formattedGuardianPhone').get(function() {
   }
   
   return this.guardianPhone;
-});
-
-// 가상 필드: 포맷팅된 비상연락처 전화번호 (표시용)
-UserSchema.virtual('formattedEmergencyPhone').get(function() {
-  if (!this.emergencyContact || !this.emergencyContact.phone) return '';
-  
-  // 11자리 숫자를 000-0000-0000 형식으로 변환
-  if (this.emergencyContact.phone.length === 11) {
-    return `${this.emergencyContact.phone.substring(0, 3)}-${this.emergencyContact.phone.substring(3, 7)}-${this.emergencyContact.phone.substring(7, 11)}`;
-  }
-  
-  return this.emergencyContact.phone;
 });
 
 // JSON으로 변환 시 가상 필드 포함하되 민감한 정보는 제외

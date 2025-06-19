@@ -33,7 +33,9 @@ router.post('/register', [
     }
     return true;
   }),
+  body('guardianRelationship', '보호자와의 관계를 선택해주세요').isIn(['부', '모', '조부', '조모', '외조부', '외조모', '형제', '자매', '부모', '형제/자매', '친척', '친구', '기타']),
   body('grade', '학년을 선택해주세요').isIn(['1', '2', '3', 'T', 'A']),
+  body('classNumber').if(body('grade').isIn(['1', '2', '3'])).notEmpty().withMessage('반을 선택해주세요').isInt({ min: 1, max: 10 }).withMessage('반은 1에서 10 사이의 숫자여야 합니다.'),
   body('gender', '성별을 선택해주세요').isIn(['M', 'F']),
   body('ssn', '주민등록번호를 입력해주세요').custom((value) => {
     if (!value || !validateSSN(value)) {
@@ -41,7 +43,8 @@ router.post('/register', [
     }
     return true;
   }),
-  body('privacyConsent', '개인정보 수집 및 이용에 동의해주세요').equals('true')
+  body('privacyConsent', '개인정보 수집 및 이용에 동의해주세요').equals('true'),
+  body('retreatConsent', '수련회 참가 서약서에 동의해주세요').equals('true')
 ], async (req, res) => {
   try {
     // 유효성 검사 오류 확인
@@ -59,11 +62,13 @@ router.post('/register', [
       password,
       phone,
       guardianPhone,
+      guardianRelationship,
       grade,
+      classNumber,
       gender,
       ssn,
       privacyConsent,
-      emergencyContact,
+      retreatConsent,
       specialRequests
     } = req.body;
 
@@ -100,11 +105,13 @@ router.post('/register', [
       password,
       phone,
       guardianPhone,
+      guardianRelationship,
       grade,
+      classNumber,
       gender,
       ssn,
       privacyConsent,
-      emergencyContact,
+      retreatConsent,
       specialRequests
     });
 
@@ -120,10 +127,12 @@ router.post('/register', [
         email: user.email,
         phone: user.phone,
         grade: user.grade,
+        classNumber: user.classNumber,
         gender: user.gender,
         role: user.role,
         adminAccess: user.adminAccess,
-        roomAssignment: user.roomAssignment
+        roomAssignment: user.roomAssignment,
+        guardianRelationship: user.guardianRelationship
       }
     });
 
@@ -186,6 +195,7 @@ router.post('/login', [
         email: user.email,
         phone: user.phone,
         grade: user.grade,
+        classNumber: user.classNumber,
         gender: user.gender,
         role: user.role,
         adminAccess: user.adminAccess,
@@ -213,6 +223,7 @@ router.get('/me', protect, async (req, res) => {
         email: user.email,
         phone: user.phone,
         grade: user.grade,
+        classNumber: user.classNumber,
         gender: user.gender,
         role: user.role,
         adminAccess: user.adminAccess,

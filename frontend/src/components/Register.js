@@ -13,15 +13,13 @@ const Register = () => {
     confirmPassword: '',
     phone: '',
     guardianPhone: '',
+    guardianRelationship: '',
     grade: '',
+    classNumber: '',
     gender: '',
     ssn: '',
     privacyConsent: false,
-    emergencyContact: {
-      name: '',
-      phone: '',
-      relationship: ''
-    },
+    retreatConsent: false,
     specialRequests: ''
   });
   
@@ -32,28 +30,10 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    if (name.startsWith('emergency.')) {
-      const field = name.split('.')[1];
-      let processedValue = value;
-      
-      // 비상연락처 전화번호 포맷팅
-      if (field === 'phone') {
-        processedValue = formatPhone(value);
-      }
-      
-      setFormData({
-        ...formData,
-        emergencyContact: {
-          ...formData.emergencyContact,
-          [field]: processedValue
-        }
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: type === 'checkbox' ? checked : value
-      });
-    }
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
     
     // 해당 필드의 에러 제거
     if (errors[name]) {
@@ -201,44 +181,67 @@ const Register = () => {
     }
 
     // 비밀번호 확인 검증
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = '비밀번호 확인을 입력해주세요';
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = '비밀번호가 일치하지 않습니다';
     }
 
     // 전화번호 검증
-    if (!formData.phone.trim()) {
+    if (!formData.phone) {
       newErrors.phone = '전화번호를 입력해주세요';
     } else {
       const cleanPhone = formData.phone.replace(/[^0-9]/g, '');
       if (!/^01[0-9]{9}$/.test(cleanPhone)) {
-        newErrors.phone = '올바른 전화번호 형식을 입력해주세요 (01로 시작하는 11자리 숫자)';
+        newErrors.phone = '올바른 전화번호를 입력해주세요 (01로 시작하는 11자리)';
       }
     }
 
     // 보호자 전화번호 검증
-    if (!formData.guardianPhone.trim()) {
+    if (!formData.guardianPhone) {
       newErrors.guardianPhone = '보호자 전화번호를 입력해주세요';
     } else {
-      const cleanGuardianPhone = formData.guardianPhone.replace(/[^0-9]/g, '');
-      if (!/^01[0-9]{9}$/.test(cleanGuardianPhone)) {
-        newErrors.guardianPhone = '올바른 보호자 전화번호 형식을 입력해주세요 (01로 시작하는 11자리 숫자)';
+      const cleanPhone = formData.guardianPhone.replace(/[^0-9]/g, '');
+      if (!/^01[0-9]{9}$/.test(cleanPhone)) {
+        newErrors.guardianPhone = '올바른 보호자 전화번호를 입력해주세요 (01로 시작하는 11자리)';
       }
     }
 
-    // 주민등록번호 검증
-    if (!formData.ssn.trim()) {
-      newErrors.ssn = '주민등록번호를 입력해주세요';
-    } else if (!validateSSN(formData.ssn)) {
-      newErrors.ssn = '올바른 주민등록번호를 입력해주세요';
+    // 보호자와의 관계 검증
+    if (!formData.guardianRelationship) {
+      newErrors.guardianRelationship = '보호자와의 관계를 선택해주세요';
     }
 
-    // 학년/성별 검증
-    if (!formData.grade) newErrors.grade = '학년을 선택해주세요';
-    if (!formData.gender) newErrors.gender = '성별을 선택해주세요';
+    // 학년 검증
+    if (!formData.grade) {
+      newErrors.grade = '학년을 선택해주세요';
+    }
+
+    // 반 검증 (학생인 경우에만)
+    if (['1', '2', '3'].includes(formData.grade) && !formData.classNumber) {
+      newErrors.classNumber = '반을 선택해주세요';
+    }
+
+    // 성별 검증
+    if (!formData.gender) {
+      newErrors.gender = '성별을 선택해주세요';
+    }
+
+    // 주민등록번호 검증
+    if (!formData.ssn) {
+      newErrors.ssn = '주민등록번호를 입력해주세요';
+    } else if (!validateSSN(formData.ssn)) {
+      newErrors.ssn = '올바른 주민등록번호를 입력해주세요 (13자리)';
+    }
 
     // 개인정보 동의 검증
     if (!formData.privacyConsent) {
       newErrors.privacyConsent = '개인정보 수집 및 이용에 동의해주세요';
+    }
+
+    // 수련회 서약서 동의 검증
+    if (!formData.retreatConsent) {
+      newErrors.retreatConsent = '수련회 참가 서약서에 동의해주세요';
     }
 
     setErrors(newErrors);
@@ -249,7 +252,7 @@ const Register = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.text-red-700');
+      const firstErrorElement = document.querySelector('.text-red-600');
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -263,6 +266,7 @@ const Register = () => {
     const { confirmPassword, ...registerData } = formData;
     registerData.ssn = cleanSSN;
     registerData.privacyConsent = 'true'; // 백엔드 validation을 위해 문자열로 전송
+    registerData.retreatConsent = 'true'; // 백엔드 validation을 위해 문자열로 전송
 
     const result = await register(registerData);
 
@@ -283,7 +287,7 @@ const Register = () => {
       
       // 에러가 있는 첫 번째 필드로 스크롤
       setTimeout(() => {
-        const firstErrorElement = document.querySelector('.text-red-700');
+        const firstErrorElement = document.querySelector('.text-red-600');
         if (firstErrorElement) {
           firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
@@ -318,8 +322,8 @@ const Register = () => {
             
             <div>
               <h4 className="font-semibold mb-2">2. 수집하는 개인정보 항목</h4>
-              <p>- 필수항목: 이름, 이메일, 전화번호, 주민등록번호, 학년, 성별</p>
-              <p>- 선택항목: 비상연락처, 특별요청사항</p>
+              <p>- 필수항목: 이름, 이메일, 전화번호, 주민등록번호, 학년, 성별, 보호자 전화번호, 보호자와의 관계</p>
+              <p>- 선택항목: 특별요청사항</p>
             </div>
             
             <div>
@@ -354,308 +358,307 @@ const Register = () => {
     </div>
   );
 
+  const renderError = (field) => {
+    return errors[field] && <p className="text-red-600 font-medium text-xs mt-1">{errors[field]}</p>;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-lg mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            숙소 예약 회원가입
+    <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            2025년 더사랑의교회 고등부 여름 수련회
           </h2>
-          <p className="text-sm text-gray-600">
-            이미 계정이 있으신가요?{' '}
-            <Link to="/login" className="text-indigo-600 hover:text-indigo-500 font-medium">
-              로그인하기
-            </Link>
+          <p className="mt-3 text-base text-gray-500">
+            등록에 필요한 정보를 입력해주세요.
           </p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {errors.general && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-              {errors.general}
-            </div>
-          )}
-          
-          {/* 기본 정보 */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              이름 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              placeholder="이름을 입력해주세요"
-            />
-            {errors.name && <p className="text-red-700 font-medium text-xs mt-1">{errors.name}</p>}
-          </div>
+        <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+          <div className="px-6 py-8 sm:p-10">
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              이메일 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              placeholder="이메일을 입력해주세요"
-            />
-            {errors.email && <p className="text-red-700 font-medium text-xs mt-1">{errors.email}</p>}
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {errors.general && (
+                <div className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-md text-sm">
+                  {errors.general}
+                </div>
+              )}
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              placeholder="영문, 숫자, 특수문자 포함 8자 이상"
-            />
-            {errors.password && <p className="text-red-700 font-medium text-xs mt-1">{errors.password}</p>}
-          </div>
+              {/* 수련회 안내 및 서약서 */}
+              <fieldset className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="p-6 bg-blue-50">
+                  <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">수련회 안내</h3>
+                  <div className="space-y-4 text-sm text-gray-800">
+                    <div>
+                      <h4 className="font-semibold text-blue-800">1. 개요</h4>
+                      <ul className="list-disc list-inside pl-2 text-gray-700">
+                        <li><span className="font-medium">일정:</span> 2025년 8월 1일(금) 00:00 ~ 8월 3일(주일) 00:00</li>
+                        <li className="text-xs pl-5">※교회 도착 예정 시간은 8월 3일(주일) 00:00 입니다.</li>
+                        <li><span className="font-medium">장소:</span> 용인 대웅경영개발원 (경기도 용인시 처인구 두계로 72)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">2. 출발일 집결 시간 및 장소</h4>
+                      <p className="pl-4">8월 1일(금) 오전 9시 교회[이음센터 7층 고등부실]에 모여 출발합니다.</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">3. 8월 3일(주일) 예배 안내</h4>
+                      <p className="pl-4"><span className="font-medium">시간/장소:</span> 오전 9시 20분 / 이음센터 7층</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">4. 신청 및 등록</h4>
+                      <ul className="list-disc list-inside pl-2 text-gray-700">
+                        <li><span className="font-medium">신청기간:</span> ~ 7월 0일(주일) 오후 5시까지</li>
+                        <li><span className="font-medium">수련회비:</span> ?????원</li>
+                        <li><span className="font-medium">입금 계좌:</span> 3333-23-6992886 카카오뱅크 (주연진)</li>
+                        <li className="text-xs pl-5">※ 입금하실 때, 꼭 "학년-반 이름"으로 입금해주세요. (ex. 1-1 홍길동)</li>
+                        <li className="text-xs pl-5">※ 수련회 시설은 사전 계약이 이루어지므로 부분 참석 시에도 할인은 없습니다.</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">5. 개인 준비물</h4>
+                      <p className="pl-4">성경, 필기도구, 여벌 옷, 양말, 세면도구(치약, 칫솔, 비누, 수건), 슬리퍼/샌들, 개인 복용약</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">6. 후원 방법</h4>
+                      <p className="pl-4">국민은행 992-76-799147 (더사랑의교회)로 "이름+후원부서" 형식으로 입금해주세요. (예: 김사랑C고등부)</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">7. 교역자 연락처</h4>
+                       <ul className="list-disc list-inside pl-2 text-gray-700">
+                        <li>김성은 강도사: 010-7189-3068</li>
+                        <li>장예찬 전도사: 010-5833-6579</li>
+                        <li>부장 문병필 집사: 010-9119-8837</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호 확인 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              placeholder="비밀번호를 다시 입력해주세요"
-            />
-            {errors.confirmPassword && <p className="text-red-700 font-medium text-xs mt-1">{errors.confirmPassword}</p>}
-          </div>
+                <div className="p-6 bg-gray-50">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">수련회 참가 서약서</h3>
+                  <div className="text-sm text-gray-600 space-y-3">
+                    <p className="font-medium text-gray-800">
+                      아래 사항에 대해 동의 여부 체크 부탁드립니다. 동의하지 않을 경우 수련회에 참가할 수 없습니다.
+                    </p>
+                    <ol className="list-decimal list-inside space-y-2 text-xs pl-2">
+                      <li>
+                        <span className="font-semibold">수련회 기간 중 휴대폰 및 전자기기(패드) 제출 동의</span>:
+                        <span className="ml-1 text-gray-500">수련회 기간 동안 휴대폰과 전자기기를 제출하여 보관하는 것에 동의합니다.</span>
+                      </li>
+                      <li>
+                        <span className="font-semibold">퇴소 조치 동의</span>:
+                        <span className="ml-1 text-gray-500">교역자 및 교사의 지시에 지속 불응하거나 공동체 안전에 위해가 가해질 경우 퇴소 조치할 수 있습니다.</span>
+                      </li>
+                      <li>
+                        <span className="font-semibold">초상권 활용의 동의</span>:
+                        <span className="ml-1 text-gray-500">해당 부서 밴드 및 교회 홈페이지에 학생 본인의 얼굴이 나오는 사진이 등록될 수 있습니다.</span>
+                      </li>
+                      <li>
+                        <span className="font-semibold">응급 처치의 동의</span>:
+                        <span className="ml-1 text-gray-500">학생의 안전에 이상 발생 시 최우선 119 신고 및 필요시 응급 처치를 진행할 수 있습니다.</span>
+                      </li>
+                    </ol>
+                  </div>
+                  <div className="flex items-start space-x-3 pt-4 mt-4 border-t border-gray-200">
+                    <input
+                      id="retreatConsent"
+                      name="retreatConsent"
+                      type="checkbox"
+                      checked={formData.retreatConsent}
+                      onChange={handleChange}
+                      className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <div className="flex-1">
+                      <label htmlFor="retreatConsent" className="text-sm text-gray-700 font-semibold">
+                        <span className="text-red-600">*</span> 위 내용에 모두 동의합니다.
+                      </label>
+                      {renderError('retreatConsent')}
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+              
+              {/* 기본 정보 */}
+              <fieldset className="space-y-4">
+                <legend className="text-lg font-semibold text-gray-900">기본 정보</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1">
+                      이름 <span className="text-red-600">*</span>
+                    </label>
+                    <input id="name" name="name" type="text" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="홍길동" />
+                    {renderError('name')}
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
+                      이메일 <span className="text-red-600">*</span>
+                    </label>
+                    <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="test@example.com" />
+                    {renderError('email')}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
+                      비밀번호 <span className="text-red-600">*</span>
+                    </label>
+                    <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="영문, 숫자, 특수문자 포함 8자 이상" />
+                    {renderError('password')}
+                  </div>
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1">
+                      비밀번호 확인 <span className="text-red-600">*</span>
+                    </label>
+                    <input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="비밀번호 재입력" />
+                    {renderError('confirmPassword')}
+                  </div>
+                </div>
+              </fieldset>
 
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              전화번호 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              placeholder="010-1234-5678"
-              value={formData.phone}
-              onChange={handlePhoneChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-            />
-            {errors.phone && <p className="text-red-700 font-medium text-xs mt-1">{errors.phone}</p>}
-          </div>
+              {/* 상세 정보 */}
+              <fieldset className="space-y-4">
+                <legend className="text-lg font-semibold text-gray-900">상세 정보</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1">
+                      전화번호 <span className="text-red-600">*</span>
+                    </label>
+                    <input id="phone" name="phone" type="tel" placeholder="010-1234-5678" value={formData.phone} onChange={handlePhoneChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" />
+                    {renderError('phone')}
+                  </div>
+                  <div>
+                    <label htmlFor="ssn" className="block text-sm font-semibold text-gray-700 mb-1">
+                      주민등록번호 <span className="text-red-600">*</span>
+                    </label>
+                    <input id="ssn" name="ssn" type="text" value={formData.ssn} onChange={handleSSNChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="123456-1234567" maxLength="14" />
+                    {renderError('ssn')}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="grade" className="block text-sm font-semibold text-gray-700 mb-1">
+                      학년 <span className="text-red-600">*</span>
+                    </label>
+                    <select id="grade" name="grade" value={formData.grade} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                      <option value="">선택</option>
+                      <option value="1">1학년</option>
+                      <option value="2">2학년</option>
+                      <option value="3">3학년</option>
+                      <option value="T">선생님</option>
+                    </select>
+                    {renderError('grade')}
+                  </div>
+                  <div>
+                    <label htmlFor="classNumber" className="block text-sm font-semibold text-gray-700 mb-1">
+                      반 <span className="text-red-600">*</span>
+                    </label>
+                    <select id="classNumber" name="classNumber" value={formData.classNumber} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" disabled={!['1', '2', '3'].includes(formData.grade)}>
+                      <option value="">선택</option>
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                        <option key={n} value={n}>{n}반</option>
+                      ))}
+                    </select>
+                    {renderError('classNumber')}
+                  </div>
+                  <div>
+                    <label htmlFor="gender" className="block text-sm font-semibold text-gray-700 mb-1">
+                      성별 <span className="text-red-600">*</span>
+                    </label>
+                    <select id="gender" name="gender" value={formData.gender} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                      <option value="">선택</option>
+                      <option value="M">남성</option>
+                      <option value="F">여성</option>
+                    </select>
+                    {renderError('gender')}
+                  </div>
+                </div>
+              </fieldset>
 
-          <div>
-            <label htmlFor="guardianPhone" className="block text-sm font-medium text-gray-700 mb-1">
-              보호자 전화번호 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="guardianPhone"
-              name="guardianPhone"
-              type="tel"
-              placeholder="010-1234-5678"
-              value={formData.guardianPhone}
-              onChange={handleGuardianPhoneChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-            />
-                         {errors.guardianPhone && <p className="text-red-700 font-medium text-xs mt-1">{errors.guardianPhone}</p>}
-          </div>
+              {/* 보호자 정보 */}
+              <fieldset className="space-y-4">
+                <legend className="text-lg font-semibold text-gray-900">보호자 정보</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="guardianPhone" className="block text-sm font-semibold text-gray-700 mb-1">
+                      보호자 전화번호 <span className="text-red-600">*</span>
+                    </label>
+                    <input id="guardianPhone" name="guardianPhone" type="tel" placeholder="010-1234-5678" value={formData.guardianPhone} onChange={handleGuardianPhoneChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" />
+                    {renderError('guardianPhone')}
+                  </div>
+                  <div>
+                    <label htmlFor="guardianRelationship" className="block text-sm font-semibold text-gray-700 mb-1">
+                      보호자와의 관계 <span className="text-red-600">*</span>
+                    </label>
+                    <select id="guardianRelationship" name="guardianRelationship" value={formData.guardianRelationship} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                      <option value="">선택</option>
+                      <option value="부모">부모</option>
+                      <option value="형제/자매">형제/자매</option>
+                      <option value="친척">친척</option>
+                      <option value="친구">친구</option>
+                      <option value="기타">기타</option>
+                    </select>
+                    {renderError('guardianRelationship')}
+                  </div>
+                </div>
+              </fieldset>
 
-          {/* 주민등록번호 */}
-          <div>
-            <label htmlFor="ssn" className="block text-sm font-medium text-gray-700 mb-1">
-              주민등록번호 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="ssn"
-              name="ssn"
-              type="text"
-              value={formData.ssn}
-              onChange={handleSSNChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              placeholder="123456-1234567"
-              maxLength="14"
-            />
-            {errors.ssn && <p className="text-red-700 font-medium text-xs mt-1">{errors.ssn}</p>}
-            <p className="text-xs text-gray-500 mt-1">
-              13자리 주민등록번호를 입력해주세요. (예: 123456-1234567) AES 암호화하여 안전하게 보관됩니다.
-            </p>
-          </div>
-
-          {/* 학년 및 성별 - 반응형 그리드 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-1">
-                학년 <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="grade"
-                name="grade"
-                value={formData.grade}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              >
-                <option value="">선택해주세요</option>
-                <option value="1">1학년</option>
-                <option value="2">2학년</option>
-                <option value="3">3학년</option>
-                <option value="T">선생님</option>
-              </select>
-              {errors.grade && <p className="text-red-700 font-medium text-xs mt-1">{errors.grade}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
-                성별 <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="gender"
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              >
-                <option value="">선택해주세요</option>
-                <option value="M">남성</option>
-                <option value="F">여성</option>
-              </select>
-              {errors.gender && <p className="text-red-700 font-medium text-xs mt-1">{errors.gender}</p>}
-            </div>
-          </div>
-
-          {/* 비상연락처 (선택사항) */}
-          <div className="border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">비상연락처 (선택사항)</h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="emergency.name" className="block text-sm font-medium text-gray-700 mb-1">
-                  이름
+              {/* 기타 요청 */}
+              <fieldset>
+                <label htmlFor="specialRequests" className="block text-sm font-semibold text-gray-700 mb-1">
+                  특별요청사항 (선택사항)
                 </label>
-                <input
-                  id="emergency.name"
-                  name="emergency.name"
-                  type="text"
-                  value={formData.emergencyContact.name}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  placeholder="비상연락처 이름"
-                />
-              </div>
+                <textarea id="specialRequests" name="specialRequests" rows="3" value={formData.specialRequests} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors resize-none" placeholder="알레르기, 특별한 요구사항 등을 입력해주세요" maxLength="500" />
+                <p className="text-xs text-right text-gray-500 mt-1">
+                  {formData.specialRequests.length}/500자
+                </p>
+              </fieldset>
 
-              <div>
-                <label htmlFor="emergency.relationship" className="block text-sm font-medium text-gray-700 mb-1">
-                  관계
-                </label>
-                <select
-                  id="emergency.relationship"
-                  name="emergency.relationship"
-                  value={formData.emergencyContact.relationship}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              {/* 개인정보 동의 */}
+              <fieldset>
+                <div className="flex items-start space-x-3">
+                  <input
+                    id="privacyConsent"
+                    name="privacyConsent"
+                    type="checkbox"
+                    checked={formData.privacyConsent}
+                    onChange={handleChange}
+                    className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="privacyConsent" className="text-sm text-gray-700">
+                      <span className="text-red-600">*</span> 개인정보 수집 및 이용에 동의합니다.{' '}
+                      <button
+                        type="button"
+                        onClick={() => setShowPrivacyModal(true)}
+                        className="font-medium text-indigo-600 hover:text-indigo-500 underline"
+                      >
+                        내용 보기
+                      </button>
+                    </label>
+                    {renderError('privacyConsent')}
+                  </div>
+                </div>
+              </fieldset>
+
+              <div className="pt-5">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
-                  <option value="">선택해주세요</option>
-                  <option value="부모">부모</option>
-                  <option value="형제/자매">형제/자매</option>
-                  <option value="친척">친척</option>
-                  <option value="친구">친구</option>
-                  <option value="기타">기타</option>
-                </select>
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      등록 중...
+                    </div>
+                  ) : (
+                    '등록하기'
+                  )}
+                </button>
               </div>
-            </div>
-
-            <div className="mt-4">
-              <label htmlFor="emergency.phone" className="block text-sm font-medium text-gray-700 mb-1">
-                전화번호
-              </label>
-              <input
-                id="emergency.phone"
-                name="emergency.phone"
-                type="tel"
-                value={formData.emergencyContact.phone}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                placeholder="010-1234-5678"
-              />
-            </div>
+            </form>
           </div>
-
-          {/* 특별요청사항 */}
-          <div>
-            <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-1">
-              특별요청사항 (선택사항)
-            </label>
-            <textarea
-              id="specialRequests"
-              name="specialRequests"
-              rows="3"
-              value={formData.specialRequests}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
-              placeholder="알레르기, 특별한 요구사항 등을 입력해주세요"
-              maxLength="500"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              {formData.specialRequests.length}/500자
-            </p>
-          </div>
-
-          {/* 개인정보 동의 */}
-          <div className="border-t pt-4">
-            <div className="flex items-start space-x-3">
-              <input
-                id="privacyConsent"
-                name="privacyConsent"
-                type="checkbox"
-                checked={formData.privacyConsent}
-                onChange={handleChange}
-                className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <div className="flex-1">
-                <label htmlFor="privacyConsent" className="text-sm text-gray-700">
-                  <span className="text-red-500">*</span> 개인정보 수집 및 이용에 동의합니다.{' '}
-                  <button
-                    type="button"
-                    onClick={() => setShowPrivacyModal(true)}
-                    className="text-indigo-600 hover:text-indigo-500 underline"
-                  >
-                    내용 보기
-                  </button>
-                </label>
-                {errors.privacyConsent && (
-                  <p className="text-red-700 font-medium text-xs mt-1">{errors.privacyConsent}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                회원가입 중...
-              </div>
-            ) : (
-              '회원가입'
-            )}
-          </button>
-        </form>
+        </div>
       </div>
       
       {showPrivacyModal && <PrivacyModal />}

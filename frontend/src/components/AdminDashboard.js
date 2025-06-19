@@ -351,7 +351,9 @@ const AdminDashboard = () => {
       비상연락처: user.formattedEmergencyPhone || user.emergencyPhone,
       주민등록번호: user.ssn || '정보없음',
       학년: user.grade === 'T' ? '선생님' : user.grade === 'A' ? '관리자' : `${user.grade}학년`,
+      반: user.classNumber,
       성별: user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender,
+      보호자관계: user.guardianRelationship || '미등록',
       배정방: user.roomAssignment?.roomNumber || '미배정',
       배정번호: user.roomAssignment?.bedNumber || '미배정',
       상태: user.roomAssignment?.status === 'pending' ? '대기중' :
@@ -543,9 +545,7 @@ const AdminDashboard = () => {
 
           <button
             onClick={() => setActiveTab('users')}
-            className={`admin-tab-button ${
-              activeTab === 'settings' ? 'admin-tab-active' : 'admin-tab-inactive'
-            }`}
+            className="nav-button nav-button-active"
           >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
@@ -554,9 +554,7 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => setActiveTab('rooms')}
-            className={`admin-tab-button ${
-              activeTab === 'rooms' ? 'admin-tab-active' : 'admin-tab-inactive'
-            }`}
+            className="nav-button nav-button-active"
           >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
@@ -565,9 +563,7 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`admin-tab-button ${
-              activeTab === 'settings' ? 'admin-tab-active' : 'admin-tab-inactive'
-            }`}
+            className="nav-button nav-button-active"
           >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
@@ -651,7 +647,13 @@ const AdminDashboard = () => {
                         전화번호
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
-                        학년/성별
+                        학년/반
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                        성별
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                        보호자관계
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
                         배정방
@@ -667,7 +669,7 @@ const AdminDashboard = () => {
                   <tbody className="bg-white divide-y divide-gray-100">
                     {loading ? (
                       <tr>
-                        <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                        <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
                           <div className="flex items-center justify-center space-x-2">
                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
                             <span>로딩 중...</span>
@@ -676,7 +678,7 @@ const AdminDashboard = () => {
                       </tr>
                     ) : users.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                        <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
                           <div className="text-center">
                             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
@@ -704,7 +706,7 @@ const AdminDashboard = () => {
                             {user.formattedPhone || user.phone}
                           </td>
 
-                          {/* 학년/성별 */}
+                          {/* 학년/반 */}
                           <td className="px-4 py-3 border-r border-gray-300">
                             <div className="flex flex-col space-y-1">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -716,12 +718,28 @@ const AdminDashboard = () => {
                                  user.grade === 'A' ? '관리자' : 
                                  `${user.grade}학년`}
                               </span>
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                user.gender === 'M' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
-                              }`}>
-                                {user.gender === 'M' ? ' 남성' : ' 여성'}
-                              </span>
+                              {user.classNumber && (
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                  {user.classNumber}반
+                                </span>
+                              )}
                             </div>
+                          </td>
+
+                          {/* 성별 */}
+                          <td className="px-4 py-3 border-r border-gray-300 text-sm">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              user.gender === 'M' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
+                            }`}>
+                              {user.gender === 'M' ? ' 남성' : ' 여성'}
+                            </span>
+                          </td>
+
+                          {/* 보호자 관계 */}
+                          <td className="px-4 py-3 border-r border-gray-300 text-sm text-gray-900">
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                              {user.guardianRelationship || '미등록'}
+                            </span>
                           </td>
 
                           {/* 배정방 */}
