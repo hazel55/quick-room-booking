@@ -23,6 +23,9 @@ const Register = () => {
     specialRequests: ''
   });
   
+  const [ssnDisplay, setSsnDisplay] = useState(''); // 마스킹된 주민번호 표시용
+  const [isSSNFocused, setIsSSNFocused] = useState(false); // 주민번호 필드 포커스 상태
+  
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -71,11 +74,25 @@ const Register = () => {
   };
 
   const handleSSNChange = (e) => {
-    const formatted = formatSSN(e.target.value);
+    const inputValue = e.target.value;
+    const numbers = inputValue.replace(/[^0-9]/g, '');
+    
+    // 실제 값 저장 (13자리 제한)
+    const limitedNumbers = numbers.substring(0, 13);
+    const formatted = formatSSN(limitedNumbers);
     setFormData({
       ...formData,
       ssn: formatted
     });
+    
+    // 포커스 상태에 따라 표시값 설정
+    if (isSSNFocused) {
+      // 포커스가 있을 때는 실제 값 표시 (마스킹 안함)
+      setSsnDisplay(formatted);
+    } else {
+      // 포커스가 없을 때는 마스킹된 값 표시
+      setSsnDisplay(maskSSN(limitedNumbers));
+    }
     
     if (errors.ssn) {
       setErrors({
@@ -83,6 +100,34 @@ const Register = () => {
         ssn: ''
       });
     }
+  };
+
+  const handleSSNFocus = () => {
+    setIsSSNFocused(true);
+    // 포커스 시 실제 값 표시
+    setSsnDisplay(formData.ssn || '');
+  };
+
+  const handleSSNBlur = () => {
+    setIsSSNFocused(false);
+    // 포커스를 잃을 때 마스킹된 값 표시
+    const numbers = formData.ssn.replace(/[^0-9]/g, '');
+    setSsnDisplay(maskSSN(numbers));
+  };
+
+  // 주민번호 마스킹 함수 (앞 6자리만 표시, 뒷자리는 *로 표시)
+  const maskSSN = (value) => {
+    if (!value) return '';
+    const numbers = value.replace(/[^0-9]/g, '');
+    if (numbers.length <= 6) {
+      return numbers;
+    } else if (numbers.length <= 13) {
+      const front = numbers.substring(0, 6);
+      const backLength = numbers.length - 6;
+      const back = '*'.repeat(backLength);
+      return `${front}-${back}`;
+    }
+    return value;
   };
 
   const handlePhoneChange = (e) => {
@@ -271,8 +316,11 @@ const Register = () => {
     const result = await register(registerData);
 
     if (result.success) {
+      // 성공 알림 표시
+      alert('회원가입이 완료되었습니다!');
       navigate('/dashboard');
     } else {
+      // 에러 처리 개선
       if (result.errors) {
         const apiErrors = {};
         result.errors.forEach(error => {
@@ -281,8 +329,20 @@ const Register = () => {
           }
         });
         setErrors(apiErrors);
+      } else if (result.message) {
+        // 특정 필드 에러인지 확인
+        if (result.message.includes('이미 가입된 이메일')) {
+          setErrors({ email: result.message });
+        } else if (result.message.includes('이미 가입된 주민등록번호')) {
+          setErrors({ ssn: result.message });
+          alert('이미 가입된 주민등록번호입니다. 다른 주민등록번호를 입력해주세요.');
+        } else {
+          setErrors({ general: result.message });
+          alert(result.message);
+        }
       } else {
-        setErrors({ general: result.message });
+        setErrors({ general: '회원가입 중 오류가 발생했습니다.' });
+        alert('회원가입 중 오류가 발생했습니다.');
       }
       
       // 에러가 있는 첫 번째 필드로 스크롤
@@ -530,7 +590,19 @@ const Register = () => {
                     <label htmlFor="ssn" className="block text-sm font-semibold text-gray-700 mb-1">
                       주민등록번호 <span className="text-red-600">*</span>
                     </label>
-                    <input id="ssn" name="ssn" type="text" value={formData.ssn} onChange={handleSSNChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="123456-1234567" maxLength="14" />
+                    <input 
+                      id="ssn" 
+                      name="ssn" 
+                      type="text" 
+                      value={ssnDisplay} 
+                      onChange={handleSSNChange}
+                      onFocus={handleSSNFocus}
+                      onBlur={handleSSNBlur}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
+                      placeholder="123456-*******" 
+                      maxLength="14"
+                      autoComplete="off"
+                    />
                     {renderError('ssn')}
                   </div>
                 </div>

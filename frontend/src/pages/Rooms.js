@@ -309,11 +309,9 @@ const Rooms = () => {
                 onChange={(e) => handleFilterChange('floor', e.target.value)}
               >
                 <option value="all">전체</option>
+                <option value="1">1층</option>
                 <option value="2">2층</option>
                 <option value="3">3층</option>
-                <option value="4">4층</option>
-                <option value="5">5층</option>
-                <option value="6">6층</option>
               </select>
             </div>
 
@@ -328,19 +326,6 @@ const Rooms = () => {
                 <option value="3">3인실</option>
                 <option value="4">4인실</option>
                 <option value="10">10인실</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label>성별</label>
-              <select 
-                value={filters.gender} 
-                onChange={(e) => handleFilterChange('gender', e.target.value)}
-              >
-                <option value="all">전체</option>
-                <option value="M">남성용</option>
-                <option value="F">여성용</option>
-                <option value="공용">공용</option>
               </select>
             </div>
 
