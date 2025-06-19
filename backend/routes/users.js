@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const Room = require('../models/Room');
 const Reservation = require('../models/Reservation');
+const ReservationHistory = require('../models/ReservationHistory');
 const ReservationService = require('../services/ReservationServiceNoTransaction');
 const { protect, admin } = require('../middleware/auth');
 const { decryptSSN } = require('../utils/encryption');
@@ -240,28 +241,63 @@ router.delete('/:id', protect, admin, async (req, res) => {
       // 다른 필수 필드들은 그대로 유지 (grade, gender 등)
     };
 
-    // 방 배정이 있다면 해제
+    // 방 배정 및 예약 정보 완전 정리 (데이터 정합성 보장)
     if (user.roomAssignment && user.roomAssignment.roomNumber) {
-      // 방에서 사용자 제거
+      console.log(`🏠 ${user.name}님의 방 배정 정보 정리 시작: ${user.roomAssignment.roomNumber}호`);
+      
+      // 1. 활성 예약 조회
+      const activeReservation = await Reservation.findOne({
+        user: user._id,
+        status: 'active'
+      });
+
+      // 2. 방에서 사용자 제거 (userId 필드명 수정)
       await Room.findOneAndUpdate(
         { roomNumber: user.roomAssignment.roomNumber },
         {
           $pull: {
             occupants: {
-              userId: user._id
+              user: user._id  // userId가 아닌 user 필드 사용
             }
           }
         }
       );
 
-      // 예약 기록도 취소 처리
+      // 3. 모든 예약 기록 취소 처리 (더 포괄적)
       await Reservation.updateMany(
-        { userId: user._id, status: { $in: ['confirmed', 'pending'] } },
-        { status: 'cancelled', cancelledAt: new Date() }
+        { user: user._id, status: { $in: ['active', 'confirmed', 'pending'] } },
+        { 
+          status: 'cancelled', 
+          cancelledAt: new Date(),
+          cancelReason: '회원 탈퇴로 인한 자동 취소'
+        }
       );
 
-      // 사용자의 방 배정 정보 제거
-      maskedData.roomAssignment = null;
+      // 4. ReservationHistory에 삭제 기록 추가
+      if (activeReservation) {
+        await ReservationHistory.create({
+          user: user._id,
+          room: activeReservation.room,
+          reservation: activeReservation._id,
+          action: 'cancelled',
+          bedNumber: activeReservation.bedNumber || user.roomAssignment.bedNumber,
+          reason: '회원 탈퇴로 인한 자동 취소',
+          performedBy: req.user.id, // 관리자 ID
+          ipAddress: req.ip || req.connection.remoteAddress,
+          userAgent: req.get('User-Agent'),
+          adminNotes: `회원 탈퇴 처리 시 자동 취소 - ${new Date().toISOString()}`
+        });
+      }
+
+      // 5. 사용자의 방 배정 정보 완전 제거
+      maskedData.roomAssignment = {
+        roomNumber: null,
+        assignedAt: null,
+        bedNumber: null,
+        status: 'pending'
+      };
+
+      console.log(`✅ ${user.name}님의 방 배정 정보 정리 완료`);
     }
 
     // 사용자 정보 업데이트 (완전 삭제 대신 마스킹)
@@ -352,7 +388,7 @@ router.put('/:id/assign-room', protect, admin, async (req, res) => {
     }
 
     // 4. 성별 확인
-    if (room.gender !== '공용' && user.gender && room.gender !== user.gender) {
+    if (room.gender !== user.gender) {
       const userGenderText = user.gender === 'M' ? '남성' : '여성';
       const roomGenderText = room.gender === 'M' ? '남성' : '여성';
       return res.status(400).json({ 

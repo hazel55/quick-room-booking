@@ -33,7 +33,7 @@ class ReservationServiceNoTransaction {
       }
 
       // 성별 확인
-      if (room.gender !== '공용' && user.gender && room.gender !== user.gender) {
+      if (room.gender !== user.gender) {
         const userGenderText = user.gender === 'M' ? '남성' : '여성';
         const roomGenderText = room.gender === 'M' ? '남성' : '여성';
         throw new Error(`이 방은 ${roomGenderText}용 방입니다. ${userGenderText}용 방을 선택해주세요.`);

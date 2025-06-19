@@ -77,6 +77,11 @@ const Rooms = () => {
   const applyFilters = () => {
     let filtered = [...rooms];
 
+    // 학생일 경우 본인 성별의 방만 조회 (선생님, 관리자는 모든 방 조회 가능)
+    if (user.grade !== 'T' && user.grade !== 'A') {
+      filtered = filtered.filter(room => room.gender === user.gender);
+    }
+
     // 층별 필터
     if (filters.floor !== 'all') {
       filtered = filtered.filter(room => room.floor === parseInt(filters.floor));
@@ -87,8 +92,8 @@ const Rooms = () => {
       filtered = filtered.filter(room => room.capacity === parseInt(filters.capacity));
     }
 
-    // 성별 필터
-    if (filters.gender !== 'all') {
+    // 성별 필터 (학생이 아닌 경우에만 적용)
+    if (filters.gender !== 'all' && (user.grade === 'T' || user.grade === 'A')) {
       filtered = filtered.filter(room => room.gender === filters.gender);
     }
 
@@ -133,7 +138,7 @@ const Rooms = () => {
     }
 
     // 성별 체크
-    if (room.gender !== '공용' && room.gender !== user.gender) {
+    if (room.gender !== user.gender) {
       setError(`이 방은 ${room.gender}용 방입니다. ${user.gender === '남자' ? '남성' : '여성'}용 방을 선택해주세요.`);
       return;
     }
@@ -193,7 +198,7 @@ const Rooms = () => {
 
   // 방이 현재 사용자 성별과 맞지 않는지 확인
   const isGenderMismatch = (room) => {
-    return room.gender !== '공용' && room.gender !== user.gender;
+    return room.gender !== user.gender;
   };
 
   // 침대 상태 렌더링
@@ -299,6 +304,18 @@ const Rooms = () => {
           </div>
         )}
 
+        {/* 학생용 안내 메시지 */}
+        {user.grade !== 'T' && user.grade !== 'A' && (
+          <div className="student-info-banner">
+            <div className="info-content">
+              <span className="info-icon">ℹ️</span>
+                             <span>
+                 {user.gender === 'M' ? '남성용' : user.gender === 'F' ? '여성용' : '본인 성별'} 방만 표시됩니다.
+               </span>
+            </div>
+          </div>
+        )}
+
         {/* 필터 영역 */}
         <div className="filters-section">
           <div className="filters-row">
@@ -328,6 +345,22 @@ const Rooms = () => {
                 <option value="10">10인실</option>
               </select>
             </div>
+
+            {/* 성별 필터 (선생님, 관리자만 표시) */}
+            {(user.grade === 'T' || user.grade === 'A') && (
+              <div className="filter-group">
+                <label>성별</label>
+                <select 
+                  value={filters.gender} 
+                  onChange={(e) => handleFilterChange('gender', e.target.value)}
+                >
+                  <option value="all">전체</option>
+                  <option value="M">남성용</option>
+                  <option value="F">여성용</option>
+
+                </select>
+              </div>
+            )}
 
             <div className="filter-group">
               <label className="checkbox-label">
@@ -362,7 +395,7 @@ const Rooms = () => {
                     <span className="floor-tag">{room.floor}층</span>
                     <span className="capacity-tag">{room.capacity}인실</span>
                     <span className={`gender-tag ${room.gender}`}>
-                      {room.gender === '공용' ? '공용' : room.gender === 'M' ? '남성' : room.gender === 'F' ? '여성' : room.gender}
+                      {room.gender === 'M' ? '남성' : room.gender === 'F' ? '여성' : room.gender}
                     </span>
                   </div>
                 </div>
@@ -431,7 +464,7 @@ const Rooms = () => {
                 <div className="room-details">
                   <p><strong>층:</strong> {selectedRoom.floor}층</p>
                   <p><strong>인실:</strong> {selectedRoom.capacity}인실</p>
-                  <p><strong>성별:</strong> {selectedRoom.gender === '공용' ? '공용' : selectedRoom.gender === 'M' ? '남성용' : selectedRoom.gender === 'F' ? '여성용' : selectedRoom.gender}</p>
+                  <p><strong>성별:</strong> {selectedRoom.gender === 'M' ? '남성용' : selectedRoom.gender === 'F' ? '여성용' : selectedRoom.gender}</p>
                   <p><strong>사용 가능 번호:</strong> {selectedRoom.availableBeds}개</p>
                 </div>
 

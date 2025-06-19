@@ -100,7 +100,7 @@ router.post('/', protect, admin, [
   body('roomNumber', '방 번호를 입력해주세요').notEmpty().matches(/^[0-9]{3}$/),
   body('floor', '층수를 입력해주세요').isInt({ min: 1, max: 10 }),
   body('capacity', '수용 인원을 입력해주세요').isIn([2, 3, 4, 10]),
-  body('gender', '성별을 선택해주세요').isIn(['M', 'F', '공용'])
+  body('gender', '성별을 선택해주세요').isIn(['M', 'F'])
 ], async (req, res) => {
   try {
     const errors = validationResult(req);

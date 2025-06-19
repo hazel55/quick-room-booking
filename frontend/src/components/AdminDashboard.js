@@ -379,7 +379,10 @@ const AdminDashboard = () => {
 
   // 엑셀 다운로드
   const downloadExcel = () => {
-    const csvData = users.map(user => ({
+    // 관리자 계정(grade A) 제외
+    const filteredUsers = users.filter(user => user.grade !== 'A');
+    
+    const csvData = filteredUsers.map(user => ({
       이름: user.name,
       이메일: user.email,
       전화번호: user.formattedPhone || user.phone,
@@ -399,6 +402,12 @@ const AdminDashboard = () => {
             '대기중',
       가입일: new Date(user.createdAt).toLocaleDateString('ko-KR')
     }));
+
+    // 다운로드할 데이터가 없는 경우 처리
+    if (csvData.length === 0) {
+      alert('다운로드할 회원 데이터가 없습니다.');
+      return;
+    }
 
     const csvContent = [
       Object.keys(csvData[0]).join(','),
@@ -894,7 +903,7 @@ const AdminDashboard = () => {
                     <option value="all">전체</option>
                     <option value="M">남성</option>
                     <option value="F">여성</option>
-                    <option value="공용">공용</option>
+
                   </select>
                 </div>
                 <div>
@@ -986,7 +995,7 @@ const AdminDashboard = () => {
                     ) : (
                       filteredRooms.map((room) => {
                         const currentOccupancy = room.occupants ? room.occupants.length : 0;
-                        const genderText = room.gender === 'M' ? '남성' : room.gender === 'F' ? '여성' : '공용';
+                        const genderText = room.gender === 'M' ? '남성' : room.gender === 'F' ? '여성' : room.gender;
                         
                         return (
                           <tr key={room._id} className="hover:bg-gray-50 transition-colors duration-200">
@@ -1295,7 +1304,7 @@ const AdminDashboard = () => {
                   <option value="">선택하세요</option>
                   <option value="M">남성</option>
                   <option value="F">여성</option>
-                  <option value="공용">공용</option>
+
                 </select>
               </div>
 

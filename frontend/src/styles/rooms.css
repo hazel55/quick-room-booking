@@ -98,6 +98,33 @@
   color: #dc2626;
 }
 
+/* 학생 안내 배너 */
+.student-info-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #3b82f6;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  gap: 0.75rem;
+}
+
+.info-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.info-content span:last-child {
+  color: #1e40af;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 /* 알림 메시지 */
 .alert {
   display: flex;

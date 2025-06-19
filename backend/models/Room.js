@@ -26,8 +26,7 @@ const RoomSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: [true, '성별을 선택해주세요'],
-    enum: ['M', 'F', '공용'],
-    default: '공용'
+    enum: ['M', 'F']
   },
   occupants: [{
     user: {
@@ -159,13 +158,13 @@ RoomSchema.statics.initializeRooms = async function() {
 
   const rooms = [];
   
-  // 1층: 2인실 5개 (공용)
+  // 1층: 2인실 5개 (남성용으로 변경)
   for (let i = 1; i <= 5; i++) {
     rooms.push({
       roomNumber: `1-2-${i.toString().padStart(2, '0')}`,
       floor: 1,
       capacity: 2,
-      gender: '공용'
+      gender: 'M'
     });
   }
 
@@ -175,7 +174,7 @@ RoomSchema.statics.initializeRooms = async function() {
       roomNumber: `2-3-${i.toString().padStart(2, '0')}`,
       floor: 2,
       capacity: 3,
-      gender: '여자'
+      gender: 'F'
     });
   }
   for (let i = 1; i <= 5; i++) {
@@ -183,7 +182,7 @@ RoomSchema.statics.initializeRooms = async function() {
       roomNumber: `2-4-${i.toString().padStart(2, '0')}`,
       floor: 2,
       capacity: 4,
-      gender: '여자'
+      gender: 'F'
     });
   }
   for (let i = 1; i <= 2; i++) {
@@ -191,7 +190,7 @@ RoomSchema.statics.initializeRooms = async function() {
       roomNumber: `2-10-${i.toString().padStart(2, '0')}`,
       floor: 2,
       capacity: 10,
-      gender: '여자'
+      gender: 'F'
     });
   }
 
@@ -201,7 +200,7 @@ RoomSchema.statics.initializeRooms = async function() {
       roomNumber: `3-3-${i.toString().padStart(2, '0')}`,
       floor: 3,
       capacity: 3,
-      gender: '남자'
+      gender: 'M'
     });
   }
   for (let i = 1; i <= 5; i++) {
@@ -209,7 +208,7 @@ RoomSchema.statics.initializeRooms = async function() {
       roomNumber: `3-4-${i.toString().padStart(2, '0')}`,
       floor: 3,
       capacity: 4,
-      gender: '남자'
+      gender: 'M'
     });
   }
   for (let i = 1; i <= 2; i++) {
@@ -217,7 +216,7 @@ RoomSchema.statics.initializeRooms = async function() {
       roomNumber: `3-10-${i.toString().padStart(2, '0')}`,
       floor: 3,
       capacity: 10,
-      gender: '남자'
+      gender: 'M'
     });
   }
 

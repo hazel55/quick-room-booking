@@ -406,7 +406,7 @@ const MyReservation = () => {
                           <span className="label">성별:</span>
                           <span className="value">
                             {roomDetail.gender === 'M' ? '남성용' : 
-                             roomDetail.gender === 'F' ? '여성용' : '공용'}
+                             roomDetail.gender === 'F' ? '여성용' : roomDetail.gender}
                           </span>
                         </div>
                         <div className="info-item">
