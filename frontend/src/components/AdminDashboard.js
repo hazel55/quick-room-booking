@@ -180,6 +180,42 @@ const AdminDashboard = () => {
     }
   };
 
+  // 회원 삭제
+  const deleteUser = async (userId, userName) => {
+    try {
+      // 사용자 확인 모달 표시
+      const confirmed = window.confirm(
+        `해당 회원을 삭제하시겠습니까?\n\n` +
+        `회원명: ${userName}\n` +
+        `주의: 이 작업은 되돌릴 수 없습니다.\n` +
+        `삭제된 회원의 민감 정보는 마스킹 처리됩니다.`
+      );
+      
+      if (!confirmed) return;
+
+      // 두 번째 확인
+      const doubleConfirmed = window.confirm(
+        `정말로 "${userName}" 회원을 삭제하시겠습니까?\n` +
+        `이 작업은 되돌릴 수 없습니다.`
+      );
+      
+      if (!doubleConfirmed) return;
+
+      // 회원 삭제 API 호출
+      const response = await userAPI.deleteUser(userId);
+      
+      // 성공 메시지
+      alert(`회원이 성공적으로 삭제되었습니다.\n${response.data.message}`);
+      
+      // 데이터 새로고침
+      loadUsers();
+      loadRooms();
+    } catch (error) {
+      console.error('회원 삭제 실패:', error);
+      alert(error.response?.data?.message || '회원 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   // 방 등록/수정 모달 열기
   const openRoomModal = (room = null) => {
     if (room) {
@@ -353,7 +389,7 @@ const AdminDashboard = () => {
       학년: user.grade === 'T' ? '선생님' : user.grade === 'A' ? '관리자' : `${user.grade}학년`,
       반: user.classNumber,
       성별: user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender,
-      보호자관계: user.guardianRelationship || '미등록',
+      보호자연락처: user.formattedGuardianPhone || user.guardianPhone || '미등록',
       배정방: user.roomAssignment?.roomNumber || '미배정',
       배정번호: user.roomAssignment?.bedNumber || '미배정',
       상태: user.roomAssignment?.status === 'pending' ? '대기중' :
@@ -653,7 +689,7 @@ const AdminDashboard = () => {
                         성별
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
-                        보호자관계
+                        보호자연락처
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
                         배정방
@@ -735,10 +771,10 @@ const AdminDashboard = () => {
                             </span>
                           </td>
 
-                          {/* 보호자 관계 */}
+                          {/* 보호자 연락처 */}
                           <td className="px-4 py-3 border-r border-gray-300 text-sm text-gray-900">
                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                              {user.guardianRelationship || '미등록'}
+                              {user.formattedGuardianPhone || user.guardianPhone || '미등록'}
                             </span>
                           </td>
 
@@ -776,17 +812,25 @@ const AdminDashboard = () => {
 
                           {/* 관리 */}
                           <td className="px-4 py-3">
-                            <button
-                              onClick={() => cancelRoomAssignment(user._id, user.roomAssignment?.roomNumber)}
-                              disabled={!user.roomAssignment?.roomNumber || user.roomAssignment?.status !== 'assigned'}
-                              className={`px-3 py-1 rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${
-                                user.roomAssignment?.roomNumber && user.roomAssignment?.status === 'assigned'
-                                  ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
-                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              }`}
-                            >
-                              방배정취소
-                            </button>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => cancelRoomAssignment(user._id, user.roomAssignment?.roomNumber)}
+                                disabled={!user.roomAssignment?.roomNumber || user.roomAssignment?.status !== 'assigned'}
+                                className={`px-3 py-1 rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${
+                                  user.roomAssignment?.roomNumber && user.roomAssignment?.status === 'assigned'
+                                    ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                              >
+                                방배정취소
+                              </button>
+                              <button
+                                onClick={() => deleteUser(user._id, user.name)}
+                                className="px-3 py-1 rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 bg-red-800 text-white hover:bg-red-900 focus:ring-red-600"
+                              >
+                                회원삭제
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))

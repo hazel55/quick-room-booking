@@ -71,6 +71,7 @@ export const userAPI = {
   getUsers: () => api.get('/users'),
   getUser: (id) => api.get(`/users/${id}`),
   updateUser: (id, userData) => api.put(`/users/${id}`, userData),
+  deleteUser: (id) => api.delete(`/users/${id}`),
   assignRoom: (id, roomData) => api.put(`/users/${id}/assign-room`, roomData),
   cancelRoomAssignment: (id) => api.delete(`/users/${id}/room-assignment`),
   searchUsers: (query, excludeAssigned = true) => 

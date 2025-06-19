@@ -8,12 +8,16 @@ const { decryptSSN } = require('../utils/encryption');
 
 const router = express.Router();
 
-// @desc    모든 사용자 조회 (관리자 전용)
+// @desc    모든 사용자 조회 (관리자 전용) - 활성 사용자만
 // @route   GET /api/users
 // @access  Private/Admin
 router.get('/', protect, admin, async (req, res) => {
   try {
-    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    // 활성 사용자만 조회 (isActive: true이고 deletedAt이 null인 사용자)
+    const users = await User.find({
+      isActive: true,
+      deletedAt: null
+    }).select('-password').sort({ createdAt: -1 });
     
     // 관리자용으로 복호화된 주민등록번호 추가
     const usersWithDecryptedSSN = users.map(user => {
@@ -66,8 +70,11 @@ router.get('/search', protect, admin, async (req, res) => {
     // 생년월일로 검색 (6자리 숫자인 경우)
     if (/^\d{6}$/.test(query)) {
       console.log('📅 생년월일 검색 모드:', query);
-      // 모든 사용자를 가져와서 복호화 후 검색
-      const allUsers = await User.find({}).select('-password');
+      // 활성 사용자만 가져와서 복호화 후 검색
+      const allUsers = await User.find({
+        isActive: true,
+        deletedAt: null
+      }).select('-password');
       const matchedUsers = [];
 
       for (const user of allUsers) {
@@ -109,10 +116,14 @@ router.get('/search', protect, admin, async (req, res) => {
       }
     }
 
-    // 이름/이메일 검색 실행
+    // 이름/이메일 검색 실행 (활성 사용자만)
     console.log('👤 이름/이메일 검색 모드:', searchConditions);
     let users = await User.find({
-      $or: searchConditions
+      $and: [
+        { $or: searchConditions },
+        { isActive: true },
+        { deletedAt: null }
+      ]
     }).select('-password').limit(50);
 
     console.log('👤 이름/이메일 검색 결과:', users.length, '명');
@@ -191,6 +202,82 @@ router.put('/:id', protect, admin, async (req, res) => {
       });
     }
 
+    res.status(500).json({ message: '서버 오류가 발생했습니다' });
+  }
+});
+
+// @desc    사용자 안전 삭제 (관리자 전용) - 민감 데이터 마스킹
+// @route   DELETE /api/users/:id
+// @access  Private/Admin
+router.delete('/:id', protect, admin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다' });
+    }
+
+    // 이름 마스킹 함수
+    const maskName = (name) => {
+      if (!name || name.length === 0) return '삭제된 사용자';
+      if (name.length === 1) return name + '*';
+      if (name.length === 2) return name[0] + '*';
+      return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
+    };
+
+    // 민감 데이터 마스킹 및 삭제
+    const timestamp = Date.now();
+    const maskedData = {
+      name: maskName(user.name),
+      email: `deleted_${timestamp}@deleted.com`, // 유니크 제약 조건 때문에 타임스탬프 추가
+      phone: '',
+      guardianPhone: '',
+      guardianRelationship: '삭제됨',
+      ssn: `deleted_${timestamp}_${user._id}`, // 주민등록번호 고유한 값으로 대체 (unique 제약 조건 때문에)
+      password: 'deleted', // 비밀번호 무의미한 값으로 대체
+      isActive: false, // 비활성화
+      deletedAt: new Date(), // 삭제 시점 기록
+      // 다른 필수 필드들은 그대로 유지 (grade, gender 등)
+    };
+
+    // 방 배정이 있다면 해제
+    if (user.roomAssignment && user.roomAssignment.roomNumber) {
+      // 방에서 사용자 제거
+      await Room.findOneAndUpdate(
+        { roomNumber: user.roomAssignment.roomNumber },
+        {
+          $pull: {
+            occupants: {
+              userId: user._id
+            }
+          }
+        }
+      );
+
+      // 예약 기록도 취소 처리
+      await Reservation.updateMany(
+        { userId: user._id, status: { $in: ['confirmed', 'pending'] } },
+        { status: 'cancelled', cancelledAt: new Date() }
+      );
+
+      // 사용자의 방 배정 정보 제거
+      maskedData.roomAssignment = null;
+    }
+
+    // 사용자 정보 업데이트 (완전 삭제 대신 마스킹)
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      maskedData,
+      { new: true, runValidators: false }
+    ).select('-password');
+
+    res.json({
+      success: true,
+      message: '사용자가 안전하게 삭제되었습니다. 민감 정보는 마스킹 처리되었습니다.',
+      data: updatedUser
+    });
+  } catch (error) {
+    console.error('사용자 삭제 오류:', error);
     res.status(500).json({ message: '서버 오류가 발생했습니다' });
   }
 });
