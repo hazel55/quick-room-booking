@@ -378,29 +378,40 @@ const Register = () => {
               <p>- 회원 식별 및 본인 확인</p>
               <p>- 숙소 이용 관련 연락 및 안내</p>
               <p>- 비상시 연락처 확보</p>
+              <p>- 여행자 보험 가입 및 보험금 청구 처리</p>
             </div>
             
             <div>
               <h4 className="font-semibold mb-2">2. 수집하는 개인정보 항목</h4>
               <p>- 필수항목: 이름, 이메일, 전화번호, 주민등록번호, 학년, 성별, 보호자 전화번호, 보호자와의 관계</p>
               <p>- 선택항목: 특별요청사항</p>
+              <p>- 주민등록번호 수집 사유: 여행자 보험 가입 시 보험사 요구 필수 정보</p>
             </div>
             
             <div>
               <h4 className="font-semibold mb-2">3. 개인정보 보유 및 이용기간</h4>
               <p>- 숙소 이용 종료 후 1년간 보관</p>
+              <p>- 여행자 보험 관련: 보험 계약 기간 및 보험금 청구 시효 기간까지</p>
               <p>- 법령에 따른 보관 의무가 있는 경우 해당 기간까지 보관</p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-2">4. 개인정보 보안</h4>
+              <h4 className="font-semibold mb-2">4. 개인정보 제3자 제공</h4>
+              <p>- 제공받는 자: 여행자 보험 담당 보험회사</p>
+              <p>- 제공 목적: 여행자 보험 가입 및 보험금 청구 처리</p>
+              <p>- 제공 항목: 이름, 주민등록번호, 연락처</p>
+              <p>- 보유 및 이용기간: 보험 계약 기간 및 법정 보관 기간</p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-2">5. 개인정보 보안</h4>
               <p>- 주민등록번호는 AES 암호화하여 저장</p>
               <p>- 비밀번호는 bcrypt 해시화하여 저장</p>
               <p>- 개인정보 접근 권한을 최소화하여 관리</p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-2">5. 동의 거부 권리</h4>
+              <h4 className="font-semibold mb-2">6. 동의 거부 권리</h4>
               <p>개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있으나, 필수 항목 동의를 거부할 경우 서비스 이용이 제한될 수 있습니다.</p>
             </div>
           </div>
@@ -452,8 +463,8 @@ const Register = () => {
                     <div>
                       <h4 className="font-semibold text-blue-800">1. 개요</h4>
                       <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li><span className="font-medium">일정:</span> 2025년 8월 1일(금) 00:00 ~ 8월 3일(주일) 00:00</li>
-                        <li className="text-xs pl-5">※교회 도착 예정 시간은 8월 3일(주일) 00:00 입니다.</li>
+                        <li><span className="font-medium">일정:</span> 2025년 8월 1일(금) ~ 3일(주일)</li>
+                        <li className="text-xs pl-5">※ 주일 예배는 고등부실에서 드립니다.</li>
                         <li><span className="font-medium">장소:</span> 용인 대웅경영개발원 (경기도 용인시 처인구 두계로 72)</li>
                       </ul>
                     </div>
@@ -468,11 +479,12 @@ const Register = () => {
                     <div>
                       <h4 className="font-semibold text-blue-800">4. 신청 및 등록</h4>
                       <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li><span className="font-medium">신청기간:</span> ~ 7월 0일(주일) 오후 5시까지</li>
-                        <li><span className="font-medium">수련회비:</span> ?????원</li>
+                        <li><span className="font-medium">신청기간:</span> 7월 5일 오후 5시까지 링크를 통해 신청</li>
+                        <li><span className="font-medium">수련회비:</span> 100,000원</li>
                         <li><span className="font-medium">입금 계좌:</span> 3333-23-6992886 카카오뱅크 (주연진)</li>
                         <li className="text-xs pl-5">※ 입금하실 때, 꼭 "학년-반 이름"으로 입금해주세요. (ex. 1-1 홍길동)</li>
                         <li className="text-xs pl-5">※ 수련회 시설은 사전 계약이 이루어지므로 부분 참석 시에도 할인은 없습니다.</li>
+                        <li className="text-xs pl-5">※ 7월 6일 오전 11시 30분에 선착순으로 방을 신청합니다.</li>
                       </ul>
                     </div>
                     <div>
@@ -481,6 +493,7 @@ const Register = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">6. 후원 방법</h4>
+                      <li className="text-xs pl-5">후원을 원하시는 가정은 교회 지정헌금 계좌로 입금해 주세요!</li>
                       <p className="pl-4">국민은행 992-76-799147 (더사랑의교회)로 "이름+후원부서" 형식으로 입금해주세요. (예: 김사랑C고등부)</p>
                     </div>
                     <div>
