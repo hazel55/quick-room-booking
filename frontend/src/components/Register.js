@@ -47,6 +47,43 @@ const Register = () => {
     }
   };
 
+  // 이름 입력 전용 핸들러 (실시간 검증)
+  const handleNameChange = (e) => {
+    const { value } = e.target;
+    
+    setFormData({
+      ...formData,
+      name: value
+    });
+    
+    // 실시간 이름 검증
+    if (value.trim()) {
+      const nameValidation = validateName(value);
+      if (!nameValidation.isValid) {
+        setErrors({
+          ...errors,
+          name: nameValidation.message
+        });
+      } else {
+        // 유효한 경우 에러 제거
+        if (errors.name) {
+          setErrors({
+            ...errors,
+            name: ''
+          });
+        }
+      }
+    } else {
+      // 빈 값인 경우 에러 제거 (제출 시에 검증)
+      if (errors.name) {
+        setErrors({
+          ...errors,
+          name: ''
+        });
+      }
+    }
+  };
+
   const formatSSN = (value) => {
     // 숫자만 남기기
     const numbers = value.replace(/[^0-9]/g, '');
@@ -160,6 +197,45 @@ const Register = () => {
     }
   };
 
+  // 이름 검증 함수
+  const validateName = (name) => {
+    if (!name || typeof name !== 'string') {
+      return { isValid: false, message: '이름을 입력해주세요' };
+    }
+
+    const trimmedName = name.trim();
+    
+    // 2글자 미만 체크
+    if (trimmedName.length < 2) {
+      return { isValid: false, message: '이름은 2글자 이상 입력해주세요' };
+    }
+
+    // 앞뒤 공백이나 연속 공백 체크
+    if (name !== trimmedName || /\s{2,}/.test(name)) {
+      return { isValid: false, message: '이름에 불필요한 공백이 있습니다' };
+    }
+
+    // 한글만 허용 (자음, 모음 단독 사용 체크 포함)
+    const koreanRegex = /^[가-힣\s]+$/;
+    if (!koreanRegex.test(trimmedName)) {
+      return { isValid: false, message: '이름은 한글만 입력 가능합니다' };
+    }
+
+    // 한글 자음만 있는지 체크 (ㄱ, ㄴ, ㄷ 등)
+    const consonantRegex = /[ㄱ-ㅎ]/;
+    if (consonantRegex.test(trimmedName)) {
+      return { isValid: false, message: '이름에 한글 자음만 입력할 수 없습니다' };
+    }
+
+    // 한글 모음만 있는지 체크 (ㅏ, ㅑ, ㅓ 등)
+    const vowelRegex = /[ㅏ-ㅣ]/;
+    if (vowelRegex.test(trimmedName)) {
+      return { isValid: false, message: '이름에 한글 모음만 입력할 수 없습니다' };
+    }
+
+    return { isValid: true, message: '' };
+  };
+
   const validateSSN = (ssn) => {
     if (!ssn || typeof ssn !== 'string') {
       return false;
@@ -203,10 +279,9 @@ const Register = () => {
     const newErrors = {};
 
     // 이름 검증
-    if (!formData.name.trim()) {
-      newErrors.name = '이름을 입력해주세요';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = '이름은 2글자 이상이어야 합니다';
+    const nameValidation = validateName(formData.name);
+    if (!nameValidation.isValid) {
+      newErrors.name = nameValidation.message;
     }
 
     // 이메일 검증
@@ -559,7 +634,7 @@ const Register = () => {
                     <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1">
                       이름 <span className="text-red-600">*</span>
                     </label>
-                    <input id="name" name="name" type="text" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="홍길동" />
+                    <input id="name" name="name" type="text" value={formData.name} onChange={handleNameChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="홍길동" />
                     {renderError('name')}
                   </div>
                   <div>
