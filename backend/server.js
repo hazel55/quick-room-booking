@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { initializeAdminSystem } = require('./utils/initAdmin');
 
 // Load environment variables
 dotenv.config();
@@ -39,7 +40,13 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/room-assi
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log('MongoDB 연결 성공'))
+.then(async () => {
+  console.log('MongoDB 연결 성공');
+  
+  // 관리자 시스템 초기화 실행
+  await initializeAdminSystem();
+  
+})
 .catch(err => console.error('MongoDB 연결 실패:', err));
 
 // Routes
