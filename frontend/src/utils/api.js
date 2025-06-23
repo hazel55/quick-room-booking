@@ -46,15 +46,51 @@ api.interceptors.request.use(
   }
 );
 
-// 응답 인터셉터 - 토큰 만료 처리
+// 응답 인터셉터 - 토큰 만료 처리 및 안전한 에러 처리
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    // 네트워크 에러 (서버에 연결할 수 없는 경우)
+    if (!error.response) {
+      console.error('네트워크 에러:', error.message);
+      // 페이지 리다이렉트 없이 에러만 반환
+      return Promise.reject(error);
     }
+
+    // HTTP 상태 코드에 따른 처리
+    const status = error.response.status;
+    
+    // 401 Unauthorized - 토큰 만료나 인증 실패
+    if (status === 401) {
+      const currentPath = window.location.pathname;
+      
+      // 로그인 페이지가 아닌 경우에만 리다이렉트
+      if (currentPath !== '/login' && currentPath !== '/register') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // 부드러운 리다이렉트 (페이지 전체 새로고침 방지)
+        if (window.history && window.history.pushState) {
+          window.history.pushState(null, '', '/login');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        } else {
+          window.location.href = '/login';
+        }
+        
+        // 사용자에게 알림
+        setTimeout(() => {
+          alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        }, 100);
+      }
+    }
+    
+    // 404, 500 등의 에러는 그대로 반환하여 컴포넌트에서 처리
+    console.error('API 에러:', {
+      status: status,
+      message: error.response?.data?.message || error.message,
+      url: error.config?.url
+    });
+    
     return Promise.reject(error);
   }
 );

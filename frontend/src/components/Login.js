@@ -45,21 +45,33 @@ const Login = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+    setErrors({}); // 기존 에러 초기화
     
-    const result = await login(formData);
+    try {
+      const result = await login(formData);
 
-    if (result.success) {
-      // 로그인 성공 시 사용자 권한에 따라 다른 페이지로 이동
-      if (result.user.adminAccess) {
-        navigate('/admin');
+      if (result.success) {
+        // 로그인 성공 시 사용자 권한에 따라 다른 페이지로 이동
+        if (result.user.adminAccess) {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
-        navigate('/dashboard');
+        // 로그인 실패 시 알림창으로 서버 메시지 표시
+        alert(`로그인 실패\n\n${result.message}`);
+        // 인라인 에러 메시지도 함께 표시
+        setErrors({ general: result.message });
       }
-    } else {
-      setErrors({ general: result.message });
+    } catch (error) {
+      // 네트워크 에러나 예상치 못한 에러 처리
+      console.error('로그인 처리 중 오류:', error);
+      const errorMessage = '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      alert(`로그인 오류\n\n${errorMessage}`);
+      setErrors({ general: errorMessage });
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (

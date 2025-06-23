@@ -21,8 +21,23 @@ export const AuthProvider = ({ children }) => {
   // 로그인 함수
   const login = async (credentials) => {
     try {
+      console.log('🔑 로그인 시도:', { email: credentials.email });
+      console.log('🌐 API 호출 URL:', authAPI.login.toString());
+      
       const response = await authAPI.login(credentials);
+      
+      console.log('✅ 로그인 성공:', { user: response.data.user?.name });
+      
+      // 응답 데이터 검증
+      if (!response.data) {
+        throw new Error('서버로부터 올바른 응답을 받지 못했습니다.');
+      }
+      
       const { token, user } = response.data;
+      
+      if (!token || !user) {
+        throw new Error('로그인 정보가 올바르지 않습니다.');
+      }
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -30,10 +45,51 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true, user };
     } catch (error) {
-      console.error('로그인 오류:', error);
+      console.error('❌ 로그인 오류 상세:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      });
+      
+      // 네트워크 에러 처리
+      if (!error.response) {
+        return {
+          success: false,
+          message: '서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.'
+        };
+      }
+      
+      // HTTP 상태 코드별 처리
+      const status = error.response.status;
+      let message;
+      
+      switch (status) {
+        case 400:
+          message = '입력한 정보가 올바르지 않습니다.';
+          break;
+        case 401:
+          message = '이메일 또는 비밀번호가 잘못되었습니다.';
+          break;
+        case 403:
+          message = '로그인이 차단되었습니다. 관리자에게 문의하세요.';
+          break;
+        case 404:
+          message = '존재하지 않는 계정입니다.';
+          break;
+        case 500:
+          message = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+          break;
+        default:
+          message = error.response?.data?.message || '로그인 중 오류가 발생했습니다.';
+      }
+      
       return {
         success: false,
-        message: error.response?.data?.message || '로그인 중 오류가 발생했습니다'
+        message: message
       };
     }
   };
