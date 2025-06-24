@@ -69,13 +69,29 @@ const UserSchema = new mongoose.Schema({
     enum: ['1', '2', '3', 'T', 'A'] // 1학년, 2학년, 3학년, 선생님, 관리자
   },
   classNumber: {
-    type: Number,
+    type: mongoose.Schema.Types.Mixed,
     required: [
       function() { return this.grade !== 'T' && this.grade !== 'A'; },
       '반을 선택해주세요'
     ],
-    min: [1, '반은 1 이상이어야 합니다.'],
-    max: [10, '반은 10 이하이어야 합니다.']
+    validate: {
+      validator: function(value) {
+        // 선생님이나 관리자는 반 선택이 필요 없음
+        if (this.grade === 'T' || this.grade === 'A') {
+          return true;
+        }
+        
+        // 'N' (새가족/미배정) 허용
+        if (value === 'N') {
+          return true;
+        }
+        
+        // 숫자 1-10 허용
+        const num = parseInt(value);
+        return !isNaN(num) && num >= 1 && num <= 10;
+      },
+      message: '반은 1에서 10 사이의 숫자이거나 새가족/미배정이어야 합니다.'
+    }
   },
   gender: {
     type: String,

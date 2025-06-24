@@ -516,7 +516,7 @@ const Register = () => {
             2025년 더사랑의교회 고등부 여름 수련회
           </h2>
           <p className="mt-3 text-base text-gray-500">
-            등록에 필요한 정보를 입력해주세요.
+            수련회 참가 신청과 회원가입을 해주세요.
           </p>
         </div>
         
@@ -717,6 +717,7 @@ const Register = () => {
                       {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
                         <option key={n} value={n}>{n}반</option>
                       ))}
+                      <option value="N">새가족/미배정</option>
                     </select>
                     {renderError('classNumber')}
                   </div>

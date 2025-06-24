@@ -85,7 +85,7 @@ const Login = () => {
             <p className="text-sm text-gray-600">
               계정이 없으신가요?{' '}
               <Link to="/register" className="text-indigo-600 hover:text-indigo-500 font-medium">
-                회원가입하기
+                수련회 참가 신청 및 회원가입 하기
               </Link>
             </p>
           </div>

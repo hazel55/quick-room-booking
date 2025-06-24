@@ -35,7 +35,17 @@ router.post('/register', [
   }),
   body('guardianRelationship', '보호자와의 관계를 선택해주세요').isIn(['부', '모', '조부', '조모', '외조부', '외조모', '형제', '자매', '부모', '형제/자매', '친척', '친구', '기타']),
   body('grade', '학년을 선택해주세요').isIn(['1', '2', '3', 'T', 'A']),
-  body('classNumber').if(body('grade').isIn(['1', '2', '3'])).notEmpty().withMessage('반을 선택해주세요').isInt({ min: 1, max: 10 }).withMessage('반은 1에서 10 사이의 숫자여야 합니다.'),
+  body('classNumber').if(body('grade').isIn(['1', '2', '3'])).notEmpty().withMessage('반을 선택해주세요').custom((value) => {
+    // 숫자 1-10 또는 'N' (새가족/미배정) 허용
+    if (value === 'N') {
+      return true;
+    }
+    const num = parseInt(value);
+    if (isNaN(num) || num < 1 || num > 10) {
+      throw new Error('반은 1에서 10 사이의 숫자이거나 새가족/미배정이어야 합니다.');
+    }
+    return true;
+  }),
   body('gender', '성별을 선택해주세요').isIn(['M', 'F']),
   body('ssn', '주민등록번호를 입력해주세요').custom((value) => {
     if (!value || !validateSSN(value)) {
