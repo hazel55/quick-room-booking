@@ -195,18 +195,13 @@ const MyReservation = () => {
           ) : (
             <div className="reservation-card">
               <div className="reservation-header">
-                <div className="room-info">
-                  <h3>{reservation.room.roomNumber}호</h3>
-                  <div className="room-details">
-                    <span className="floor">{reservation.room.floor}층</span>
-                    <span className="capacity">{reservation.room.capacity}인실</span>
-                    <span className={`gender ${reservation.room.gender}`}>
-                      {reservation.room.gender}
-                    </span>
-                  </div>
-                </div>
-                <div className="bed-info">
-                  <span className="bed-number">{reservation.bedNumber}번</span>
+                <h3>{/^\d+$/.test(reservation.room.roomNumber) ? `${reservation.room.roomNumber}호` : reservation.room.roomNumber}</h3>
+                <div className="reservation-tags">
+                  <span className="floor-tag">{reservation.room.floor}층</span>
+                  <span className="capacity-tag">{reservation.room.capacity}인실</span>
+                  <span className={`gender-tag ${reservation.room.gender}`}>
+                    {reservation.room.gender === 'M' ? '남성' : '여성'}
+                  </span>
                 </div>
               </div>
 
@@ -286,15 +281,13 @@ const MyReservation = () => {
                       </span>
                     </div>
                     
-                    <div className="history-details">
-                      <span className="room-info">
-                        {item.room.roomNumber}호 ({item.room.floor}층, {item.room.capacity}인실)
-                      </span>
-                      {item.bedNumber && (
-                        <span className="bed-info">
-                          {item.bedNumber}번
-                        </span>
-                      )}
+                    <div className="history-item-content">
+                      <div className="history-room-info">
+                        {/^\d+$/.test(item.room.roomNumber) ? `${item.room.roomNumber}호` : item.room.roomNumber} ({item.room.floor}층, {item.room.capacity}인실)
+                      </div>
+                      <div className="history-bed-info">
+                        자리 번호: {item.bedNumber}번
+                      </div>
                     </div>
 
                     {item.reason && (
@@ -374,8 +367,17 @@ const MyReservation = () => {
           <div className="modal-overlay" onClick={closeRoomDetail}>
             <div className="modal-content room-detail-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>{reservation?.room?.roomNumber}호 상세정보</h2>
-                <button className="modal-close" onClick={closeRoomDetail}>×</button>
+                <h2>{/^\d+$/.test(reservation?.room?.roomNumber) ? `${reservation.room.roomNumber}호 상세정보` : `${reservation?.room?.roomNumber} 상세정보`}</h2>
+                <button
+                  onClick={() => setShowRoomDetail(false)}
+                  className="modal-close-button"
+                  type="button"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
               </div>
 
               <div className="modal-body">
@@ -392,7 +394,7 @@ const MyReservation = () => {
                       <div className="info-grid">
                         <div className="info-item">
                           <span className="label">방 번호:</span>
-                          <span className="value">{roomDetail.roomNumber}호</span>
+                          <span className="value">{/^\d+$/.test(roomDetail.roomNumber) ? `${roomDetail.roomNumber}호` : roomDetail.roomNumber}</span>
                         </div>
                         <div className="info-item">
                           <span className="label">층:</span>

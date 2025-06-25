@@ -4,7 +4,9 @@ const RoomSchema = new mongoose.Schema({
   roomNumber: {
     type: String,
     required: [true, '방 번호를 입력해주세요'],
-    unique: true
+    unique: true,
+    maxlength: [12, '방 번호는 12글자 이하여야 합니다'],
+    trim: true
   },
   floor: {
     type: Number,
@@ -15,12 +17,12 @@ const RoomSchema = new mongoose.Schema({
   capacity: {
     type: Number,
     required: [true, '수용 인원을 입력해주세요'],
-    enum: [2, 3, 4, 10],
+    enum: [2, 3, 4, 10, 20],
     validate: {
       validator: function(value) {
-        return [2, 3, 4, 10].includes(value);
+        return [2, 3, 4, 10, 20].includes(value);
       },
-      message: '수용 인원은 2명, 3명, 4명, 10명 중 하나여야 합니다'
+      message: '수용 인원은 2명, 3명, 4명, 10명, 20명 중 하나여야 합니다'
     }
   },
   gender: {

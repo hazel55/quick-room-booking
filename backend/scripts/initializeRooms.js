@@ -26,7 +26,7 @@ const initializeRooms = async () => {
         roomNumber: `20${i}`,
         floor: 2,
         capacity: 2,
-        gender: i <= 2 ? '남자' : '여자', // 201-202: 남자, 203-205: 여자
+        gender: i <= 2 ? 'M' : 'F', // 201-202: 남자, 203-205: 여자
         amenities: ['에어컨', '난방', '개별화장실', '책상', '옷장', 'WiFi'],
         description: `2층 ${i <= 2 ? '남성' : '여성'}용 2인실`
       });
@@ -38,7 +38,7 @@ const initializeRooms = async () => {
         roomNumber: `30${i.toString().padStart(2, '0')}`,
         floor: 3,
         capacity: 3,
-        gender: i <= 6 ? '남자' : '여자', // 301-306: 남자, 307-312: 여자
+        gender: i <= 6 ? 'M' : 'F', // 301-306: 남자, 307-312: 여자
         amenities: ['에어컨', '난방', '공용화장실', '책상', '옷장', 'WiFi'],
         description: `3층 ${i <= 6 ? '남성' : '여성'}용 3인실`
       });
@@ -50,7 +50,7 @@ const initializeRooms = async () => {
         roomNumber: `40${i.toString().padStart(2, '0')}`,
         floor: 4,
         capacity: 3,
-        gender: i <= 6 ? '남자' : '여자', // 401-406: 남자, 407-412: 여자
+        gender: i <= 6 ? 'M' : 'F', // 401-406: 남자, 407-412: 여자
         amenities: ['에어컨', '난방', '공용화장실', '책상', '옷장', 'WiFi'],
         description: `4층 ${i <= 6 ? '남성' : '여성'}용 3인실`
       });
@@ -62,7 +62,7 @@ const initializeRooms = async () => {
         roomNumber: `50${i}`,
         floor: 5,
         capacity: 4,
-        gender: i <= 5 ? '남자' : '여자', // 501-505: 남자, 506-510: 여자
+        gender: i <= 5 ? 'M' : 'F', // 501-505: 남자, 506-510: 여자
         amenities: ['에어컨', '난방', '공용화장실', '냉장고', '책상', '옷장', 'WiFi'],
         description: `5층 ${i <= 5 ? '남성' : '여성'}용 4인실`
       });
@@ -74,11 +74,49 @@ const initializeRooms = async () => {
         roomNumber: `60${i}`,
         floor: 6,
         capacity: 10,
-        gender: i <= 2 ? '남자' : '여자', // 601-602: 남자, 603-604: 여자
+        gender: i <= 2 ? 'M' : 'F', // 601-602: 남자, 603-604: 여자
         amenities: ['에어컨', '난방', '공용화장실', '냉장고', '책상', '옷장', 'WiFi'],
         description: `6층 ${i <= 2 ? '남성' : '여성'}용 10인실 (대형 도미토리)`
       });
     }
+    
+    // 영문자가 포함된 방 번호 예시 추가 (데모용)
+    rooms.push({
+      roomNumber: 'A101',
+      floor: 3,
+      capacity: 2,
+      gender: 'M',
+      amenities: ['에어컨', '난방', '개별화장실', '책상', '옷장', 'WiFi'],
+      description: '특별실 A101'
+    });
+    
+    rooms.push({
+      roomNumber: 'VIP-01',
+      floor: 4,
+      capacity: 1,
+      gender: 'F',
+      amenities: ['에어컨', '난방', '개별화장실', '냉장고', '책상', '옷장', 'WiFi'],
+      description: 'VIP 1인실'
+    });
+    
+    // 20명 대형 도미토리 예시 추가
+    rooms.push({
+      roomNumber: 'DORM-A',
+      floor: 5,
+      capacity: 20,
+      gender: 'M',
+      amenities: ['에어컨', '난방', '공용화장실', '냉장고', '책상', '옷장', 'WiFi'],
+      description: '대형 도미토리 A (20인실)'
+    });
+    
+    rooms.push({
+      roomNumber: 'DORM-B',
+      floor: 5,
+      capacity: 20,
+      gender: 'F',
+      amenities: ['에어컨', '난방', '공용화장실', '냉장고', '책상', '옷장', 'WiFi'],
+      description: '대형 도미토리 B (20인실)'
+    });
     
     // 방 데이터 일괄 삽입
     const createdRooms = await Room.insertMany(rooms);

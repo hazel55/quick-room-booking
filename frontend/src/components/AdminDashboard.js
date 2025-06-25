@@ -272,8 +272,14 @@ const AdminDashboard = () => {
         return;
       }
 
+      // 방 번호 검증 (12글자 이하)
+      if (roomForm.roomNumber && roomForm.roomNumber.length > 12) {
+        alert('방 번호는 12글자 이하여야 합니다.');
+        return;
+      }
+
       const roomData = {
-        roomNumber: roomForm.roomNumber,
+        roomNumber: roomForm.roomNumber.trim(),
         floor: parseInt(roomForm.floor),
         gender: roomForm.gender,
         capacity: parseInt(roomForm.capacity),
@@ -791,7 +797,9 @@ const AdminDashboard = () => {
                           <td className="px-4 py-3 border-r border-gray-300 text-sm text-gray-900">
                             {user.roomAssignment?.roomNumber ? (
                               <div>
-                                <div className="font-medium">{user.roomAssignment.roomNumber}호</div>
+                                <div className="font-medium">
+                                  {/^\d+$/.test(user.roomAssignment.roomNumber) ? `${user.roomAssignment.roomNumber}호` : user.roomAssignment.roomNumber}
+                                </div>
                                 {user.roomAssignment.bedNumber && (
                                   <div className="text-xs text-gray-500">
                                     {user.roomAssignment.bedNumber}번
@@ -1209,7 +1217,7 @@ const AdminDashboard = () => {
                   <div>
                     <h4 className="text-sm font-semibold text-yellow-900">데이터 정합성 복구</h4>
                     <p className="text-sm text-yellow-800 mt-1">
-                      Dashboard와 My-Reservation 페이지의 예약 정보가 일치하지 않는 경우 사용하세요.
+                      Dashboard와 My-Reservation 페이지의 예약 정보가 일치하지 않을 때 사용하세요.
                       예약 데이터와 사용자 배정 정보를 동기화합니다.
                     </p>
                   </div>
@@ -1269,10 +1277,21 @@ const AdminDashboard = () => {
                   type="text"
                   className="form-input"
                   value={roomForm.roomNumber}
-                  onChange={(e) => setRoomForm({...roomForm, roomNumber: e.target.value})}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 12) {
+                      setRoomForm({...roomForm, roomNumber: value});
+                    }
+                  }}
                   disabled={editingRoom}
-                  placeholder="예: 201"
+                  placeholder="예: 201, A101, ROOM-A (12글자 이하)"
+                  maxLength="12"
                 />
+                {roomForm.roomNumber && (
+                  <small className="text-gray-500">
+                    {roomForm.roomNumber.length}/12글자
+                  </small>
+                )}
               </div>
 
               {/* 층 */}

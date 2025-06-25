@@ -97,9 +97,9 @@ router.get('/:id', async (req, res) => {
 // @route   POST /api/rooms
 // @access  Private/Admin
 router.post('/', protect, admin, [
-  body('roomNumber', '방 번호를 입력해주세요').notEmpty().matches(/^[0-9]{3}$/),
+  body('roomNumber', '방 번호를 입력해주세요').notEmpty().isLength({ min: 1, max: 12 }).withMessage('방 번호는 1-12글자여야 합니다'),
   body('floor', '층수를 입력해주세요').isInt({ min: 1, max: 10 }),
-  body('capacity', '수용 인원을 입력해주세요').isIn([2, 3, 4, 10]),
+  body('capacity', '수용 인원을 입력해주세요').isIn([2, 3, 4, 10, 20]),
   body('gender', '성별을 선택해주세요').isIn(['M', 'F'])
 ], async (req, res) => {
   try {
@@ -167,6 +167,11 @@ router.put('/:id', protect, admin, async (req, res) => {
 
     if (!room) {
       return res.status(404).json({ message: '방을 찾을 수 없습니다' });
+    }
+
+    // 방 번호 검증 (길이 제한)
+    if (req.body.roomNumber && req.body.roomNumber.length > 12) {
+      return res.status(400).json({ message: '방 번호는 12글자 이하여야 합니다' });
     }
 
     // 방 번호 변경 시 중복 확인

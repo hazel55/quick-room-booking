@@ -390,7 +390,7 @@ const Rooms = () => {
                 }`}
               >
                 <div className="room-header">
-                  <h3>{room.roomNumber}호</h3>
+                  <h3>{/^\d+$/.test(room.roomNumber) ? `${room.roomNumber}호` : room.roomNumber}</h3>
                   <div className="room-tags">
                     <span className="floor-tag">{room.floor}층</span>
                     <span className="capacity-tag">{room.capacity}인실</span>
@@ -456,7 +456,7 @@ const Rooms = () => {
           <div className="modal-overlay" onClick={closeModal}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>{selectedRoom.roomNumber}호 예약</h2>
+                <h2>{/^\d+$/.test(selectedRoom.roomNumber) ? `${selectedRoom.roomNumber}호 예약` : `${selectedRoom.roomNumber} 예약`}</h2>
                 <button className="modal-close" onClick={closeModal}>×</button>
               </div>
 

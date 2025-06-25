@@ -154,11 +154,13 @@ const Dashboard = () => {
                 </div>
               ) : reservation ? (
                 <div>
-                  <div className="text-3xl font-bold text-indigo-600 mb-2">
-                    {reservation.room.roomNumber}호
-                  </div>
-                  <div className="text-sm text-gray-600 mb-1">
-                    침대 번호: <span className="font-medium">{reservation.bedNumber}번</span>
+                  <div className="room-info">
+                    <div className="text-3xl font-bold text-indigo-600 mb-2">
+                      {/^\d+$/.test(reservation.room.roomNumber) ? `${reservation.room.roomNumber}호` : reservation.room.roomNumber}
+                    </div>
+                    <div className="text-sm text-gray-600 mb-1">
+                      자리 번호: <span className="font-medium">{reservation.bedNumber}번</span>
+                    </div>
                   </div>
                   <div className="text-sm text-gray-600 mb-1">
                     상태: <span className="font-medium text-green-600">예약됨</span>
