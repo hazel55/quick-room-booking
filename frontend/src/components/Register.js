@@ -717,6 +717,22 @@ const Register = () => {
                       비밀번호 <span className="text-red-600">*</span>
                     </label>
                     <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="영문, 숫자, 특수문자 포함 6자 이상" />
+                    <div className="mt-1 text-xs text-gray-500">
+                      <div className="grid grid-cols-2 sm:flex sm:items-center sm:space-x-4 gap-1 sm:gap-0">
+                        <span className={`flex items-center ${formData.password.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
+                          {formData.password.length >= 6 ? '✓' : '•'} 최소 6자 이상
+                        </span>
+                        <span className={`flex items-center ${/[a-zA-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                          {/[a-zA-Z]/.test(formData.password) ? '✓' : '•'} 영문자 포함
+                        </span>
+                        <span className={`flex items-center ${/\d/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                          {/\d/.test(formData.password) ? '✓' : '•'} 숫자 포함
+                        </span>
+                        <span className={`flex items-center ${/[@$!%*?&]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                          {/[@$!%*?&]/.test(formData.password) ? '✓' : '•'} 특수문자 포함
+                        </span>
+                      </div>
+                    </div>
                     {renderError('password')}
                   </div>
                   <div>
