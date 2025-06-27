@@ -117,10 +117,72 @@ const Register = () => {
     // 실제 값 저장 (13자리 제한)
     const limitedNumbers = numbers.substring(0, 13);
     const formatted = formatSSN(limitedNumbers);
-    setFormData({
+    
+    // 주민번호 7번째 자리를 기준으로 성별 자동 설정
+    let updatedFormData = {
       ...formData,
       ssn: formatted
-    });
+    };
+    
+    // 실시간 유효성 검사 및 에러 업데이트
+    let newErrors = { ...errors };
+    
+    // 입력 중일 때는 기본 에러 제거
+    if (newErrors.ssn) {
+      newErrors.ssn = '';
+    }
+    if (newErrors.gender) {
+      newErrors.gender = '';
+    }
+    
+    console.log('주민번호 입력:', limitedNumbers, '길이:', limitedNumbers.length);
+    if (limitedNumbers.length >= 7) {
+      console.log('7번째 자리 성별코드:', limitedNumbers[6]);
+    }
+    
+    // 7자리 이상 입력되었을 때 성별 자동 설정 및 검증
+    if (limitedNumbers.length >= 7) {
+      const genderCode = parseInt(limitedNumbers[6]);
+      if ([1, 3].includes(genderCode)) {
+        updatedFormData.gender = 'M'; // 남자
+      } else if ([2, 4].includes(genderCode)) {
+        updatedFormData.gender = 'F'; // 여자
+      } else {
+        // 0, 5, 6, 7, 8, 9 등 유효하지 않은 값일 때 성별 초기화
+        updatedFormData.gender = ''; 
+        newErrors.ssn = '주민등록번호 7번째 자리는 1, 2, 3, 4만 입력 가능합니다';
+      }
+    }
+    
+    // 13자리 모두 입력되었을 때 전체 유효성 검사
+    if (limitedNumbers.length === 13) {
+      if (!validateSSN(formatted)) {
+        newErrors.ssn = '올바른 주민등록번호를 입력해주세요';
+      } else {
+        // 성별과 주민번호 일치 여부 확인
+        const genderCode = parseInt(limitedNumbers[6]);
+        const expectedGender = [1, 3].includes(genderCode) ? 'M' : [2, 4].includes(genderCode) ? 'F' : null;
+        if (expectedGender && updatedFormData.gender && updatedFormData.gender !== expectedGender) {
+          newErrors.ssn = '주민등록번호와 성별이 일치하지 않습니다';
+        }
+      }
+    }
+    
+    // 6자리까지 입력되었을 때 생년월일 검증
+    if (limitedNumbers.length >= 6) {
+      const year = parseInt(limitedNumbers.substring(0, 2));
+      const month = parseInt(limitedNumbers.substring(2, 4));
+      const day = parseInt(limitedNumbers.substring(4, 6));
+      
+      if (month < 1 || month > 12) {
+        newErrors.ssn = '올바른 월을 입력해주세요 (01-12)';
+      } else if (day < 1 || day > 31) {
+        newErrors.ssn = '올바른 일을 입력해주세요 (01-31)';
+      }
+    }
+    
+    setFormData(updatedFormData);
+    setErrors(newErrors);
     
     // 포커스 상태에 따라 표시값 설정
     if (isSSNFocused) {
@@ -129,13 +191,6 @@ const Register = () => {
     } else {
       // 포커스가 없을 때는 마스킹된 값 표시
       setSsnDisplay(maskSSN(limitedNumbers));
-    }
-    
-    if (errors.ssn) {
-      setErrors({
-        ...errors,
-        ssn: ''
-      });
     }
   };
 
@@ -266,7 +321,7 @@ const Register = () => {
       return false;
     }
     
-    // 성별 확인 (7번째 자리: 1,2,3,4)
+    // 성별 확인 (7번째 자리: 1,2,3,4만 유효)
     const genderCode = parseInt(cleanSSN[6]);
     if (![1, 2, 3, 4].includes(genderCode)) {
       return false;
@@ -352,6 +407,16 @@ const Register = () => {
       newErrors.ssn = '주민등록번호를 입력해주세요';
     } else if (!validateSSN(formData.ssn)) {
       newErrors.ssn = '올바른 주민등록번호를 입력해주세요 (13자리)';
+    } else if (formData.gender) {
+      // 성별과 주민번호 일치 여부 확인
+      const cleanSSN = formData.ssn.replace(/[^0-9]/g, '');
+      if (cleanSSN.length >= 7) {
+        const genderCode = parseInt(cleanSSN[6]);
+        const expectedGender = [1, 3].includes(genderCode) ? 'M' : [2, 4].includes(genderCode) ? 'F' : null;
+        if (expectedGender && formData.gender !== expectedGender) {
+          newErrors.ssn = '주민등록번호와 성별이 일치하지 않습니다';
+        }
+      }
     }
 
     // 개인정보 동의 검증
@@ -678,6 +743,15 @@ const Register = () => {
                   <div>
                     <label htmlFor="ssn" className="block text-sm font-semibold text-gray-700 mb-1">
                       주민등록번호 <span className="text-red-600">*</span>
+                      {formData.ssn && formData.ssn.replace(/[^0-9]/g, '').length === 13 && !errors.ssn && (
+                        <span className="text-xs text-green-600 ml-2">✓ 유효한 주민번호</span>
+                      )}
+                      {formData.ssn && formData.ssn.replace(/[^0-9]/g, '').length > 0 && 
+                       formData.ssn.replace(/[^0-9]/g, '').length < 13 && (
+                        <span className="text-xs text-blue-600 ml-2">
+                          ({formData.ssn.replace(/[^0-9]/g, '').length}/13자리)
+                        </span>
+                      )}
                     </label>
                     <input 
                       id="ssn" 
@@ -687,7 +761,13 @@ const Register = () => {
                       onChange={handleSSNChange}
                       onFocus={handleSSNFocus}
                       onBlur={handleSSNBlur}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
+                        errors.ssn 
+                          ? 'border-red-300 focus:ring-red-500 bg-red-50' 
+                          : formData.ssn && formData.ssn.replace(/[^0-9]/g, '').length === 13 && !errors.ssn
+                          ? 'border-green-300 focus:ring-green-500 bg-green-50'
+                          : 'border-gray-300 focus:ring-indigo-500'
+                      }`}
                       placeholder="123456-*******" 
                       maxLength="14"
                       autoComplete="off"
@@ -725,8 +805,23 @@ const Register = () => {
                   <div>
                     <label htmlFor="gender" className="block text-sm font-semibold text-gray-700 mb-1">
                       성별 <span className="text-red-600">*</span>
+                      {formData.gender && formData.ssn && formData.ssn.replace(/[^0-9]/g, '').length >= 7 && 
+                       [1, 2, 3, 4].includes(parseInt(formData.ssn.replace(/[^0-9]/g, '')[6])) && (
+                        <span className="text-xs text-green-600 ml-2">(주민번호로 자동 설정됨)</span>
+                      )}
                     </label>
-                    <select id="gender" name="gender" value={formData.gender} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                    <select 
+                      id="gender" 
+                      name="gender" 
+                      value={formData.gender} 
+                      onChange={handleChange} 
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        formData.gender && formData.ssn && formData.ssn.replace(/[^0-9]/g, '').length >= 7 &&
+                        [1, 2, 3, 4].includes(parseInt(formData.ssn.replace(/[^0-9]/g, '')[6]))
+                          ? 'border-green-300 bg-green-50'
+                          : 'border-gray-300'
+                      }`}
+                    >
                       <option value="">선택</option>
                       <option value="M">남성</option>
                       <option value="F">여성</option>

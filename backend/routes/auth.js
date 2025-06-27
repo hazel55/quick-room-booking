@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { generateToken, protect } = require('../middleware/auth');
-const { encryptSSN, validateSSN } = require('../utils/encryption');
+const { encryptSSN, validateSSN, validateGenderWithSSN } = require('../utils/encryption');
 
 const router = express.Router();
 
@@ -47,10 +47,16 @@ router.post('/register', [
     return true;
   }),
   body('gender', '성별을 선택해주세요').isIn(['M', 'F']),
-  body('ssn', '주민등록번호를 입력해주세요').custom((value) => {
+  body('ssn', '주민등록번호를 입력해주세요').custom((value, { req }) => {
     if (!value || !validateSSN(value)) {
       throw new Error('올바른 주민등록번호를 입력해주세요 (13자리)');
     }
+    
+    // 성별과 주민번호 일치 여부 확인
+    if (req.body.gender && !validateGenderWithSSN(value, req.body.gender)) {
+      throw new Error('주민등록번호와 성별이 일치하지 않습니다');
+    }
+    
     return true;
   }),
   body('privacyConsent', '개인정보 수집 및 이용에 동의해주세요').equals('true'),

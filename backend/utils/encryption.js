@@ -100,13 +100,54 @@ const validateSSN = (ssn) => {
     return false;
   }
   
-  // 성별 확인 (7번째 자리: 1,2,3,4)
+  // 성별 확인 (7번째 자리: 1,2,3,4만 유효)
   const genderCode = parseInt(cleanSSN[6]);
   if (![1, 2, 3, 4].includes(genderCode)) {
     return false;
   }
   
   return true; // 간단한 검증만 수행
+};
+
+/**
+ * 주민등록번호에서 성별 추출
+ * @param {string} ssn - 주민등록번호 (13자리)
+ * @returns {string|null} 성별 ('M' 또는 'F', 오류 시 null)
+ */
+const getGenderFromSSN = (ssn) => {
+  if (!ssn || typeof ssn !== 'string') {
+    return null;
+  }
+  
+  // 숫자만 남기기
+  const cleanSSN = ssn.replace(/[^0-9]/g, '');
+  
+  // 13자리 숫자인지 확인
+  if (cleanSSN.length !== 13) {
+    return null;
+  }
+  
+  // 성별 코드 (7번째 자리)
+  const genderCode = parseInt(cleanSSN[6]);
+  
+  if ([1, 3].includes(genderCode)) {
+    return 'M'; // 남자
+  } else if ([2, 4].includes(genderCode)) {
+    return 'F'; // 여자
+  }
+  
+  return null;
+};
+
+/**
+ * 주민등록번호와 성별 일치 여부 검증
+ * @param {string} ssn - 주민등록번호 (13자리)
+ * @param {string} gender - 성별 ('M' 또는 'F')
+ * @returns {boolean} 일치 여부
+ */
+const validateGenderWithSSN = (ssn, gender) => {
+  const ssnGender = getGenderFromSSN(ssn);
+  return ssnGender === gender;
 };
 
 /**
@@ -126,5 +167,7 @@ module.exports = {
   encryptSSN,
   decryptSSN,
   validateSSN,
-  maskSSN
+  maskSSN,
+  getGenderFromSSN,
+  validateGenderWithSSN
 }; 
