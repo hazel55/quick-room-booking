@@ -7,6 +7,9 @@ const { initializeAdminSystem } = require('./utils/initAdmin');
 // Load environment variables
 dotenv.config();
 
+// 대한민국 시간대 설정
+process.env.TZ = 'Asia/Seoul';
+
 const app = express();
 
 // CORS 설정
@@ -58,9 +61,22 @@ app.use('/api/reservation-settings', require('./routes/reservationSettings'));
 
 // Health check
 app.get('/api/health', (req, res) => {
+  const now = new Date();
+  const koreaTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Seoul"}));
+  
   res.json({ 
     message: '숙소 방배정 시스템 API 서버가 정상 작동 중입니다.',
-    timestamp: new Date().toISOString()
+    timestamp: koreaTime.toISOString(),
+    timezone: 'Asia/Seoul',
+    serverTime: koreaTime.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'Asia/Seoul'
+    })
   });
 });
 

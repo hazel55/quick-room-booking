@@ -20,6 +20,9 @@ const Rooms = () => {
   const [reservationSettings, setReservationSettings] = useState(null);
   const [isReservationOpen, setIsReservationOpen] = useState(false);
   
+  // 실시간 카운트다운을 위한 상태
+  const [realTimeRemaining, setRealTimeRemaining] = useState(0);
+  
   // 필터 상태
   const [filters, setFilters] = useState({
     floor: 'all',
@@ -42,6 +45,40 @@ const Rooms = () => {
   useEffect(() => {
     applyFilters();
   }, [rooms, filters]);
+
+  // 실시간 카운트다운 useEffect
+  useEffect(() => {
+    let interval = null;
+    
+    if (reservationSettings && !isReservationOpen && reservationSettings.timeUntilOpen > 0) {
+      // 초기 남은 시간 설정
+      setRealTimeRemaining(reservationSettings.timeUntilOpen);
+      
+      interval = setInterval(() => {
+        const now = new Date();
+        const openTime = new Date(reservationSettings.openDateTime);
+        const remaining = openTime.getTime() - now.getTime();
+        
+        if (remaining <= 0) {
+          // 시간이 만료되면 예약 설정을 다시 가져옴
+          setRealTimeRemaining(0);
+          clearInterval(interval);
+          fetchReservationSettings();
+        } else {
+          setRealTimeRemaining(remaining);
+        }
+      }, 100); // 100ms마다 업데이트하여 밀리초 표시
+    } else {
+      setRealTimeRemaining(0);
+    }
+    
+    // 컴포넌트 언마운트 시 interval 정리
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [reservationSettings, isReservationOpen]);
 
   const fetchRooms = async () => {
     try {
@@ -109,6 +146,19 @@ const Rooms = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // 실시간 남은 시간 계산 함수
+  const formatRealTimeRemaining = () => {
+    if (realTimeRemaining <= 0) return null;
+    
+    const days = Math.floor(realTimeRemaining / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((realTimeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((realTimeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((realTimeRemaining % (1000 * 60)) / 1000);
+    const milliseconds = Math.floor(realTimeRemaining % 1000);
+    
+    return { days, hours, minutes, seconds, milliseconds };
+  };
+
   const openReservationModal = (room) => {
     // 예약 오픈 시간 확인 (실제 예약 시에만 체크)
     if (!isReservationOpen && room.availableBeds > 0) {
@@ -119,15 +169,22 @@ const Rooms = () => {
           month: '2-digit',
           day: '2-digit',
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          timeZone: 'Asia/Seoul'
         });
         
         if (reservationSettings.timeUntilOpen > 0) {
-          const days = Math.floor(reservationSettings.timeUntilOpen / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((reservationSettings.timeUntilOpen % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((reservationSettings.timeUntilOpen % (1000 * 60 * 60)) / (1000 * 60));
-          
-          setError(`아직 예약 오픈 시간이 아닙니다.\n오픈 예정: ${openDateTimeKorean}\n남은 시간: ${days}일 ${hours}시간 ${minutes}분`);
+          const timeRemaining = formatRealTimeRemaining();
+          if (timeRemaining) {
+            setError(`아직 예약 오픈 시간이 아닙니다.\n오픈 예정: ${openDateTimeKorean}\n남은 시간: ${timeRemaining.days}일 ${timeRemaining.hours}시간 ${timeRemaining.minutes}분 ${timeRemaining.seconds}초 ${timeRemaining.milliseconds.toString().padStart(3, '0')}ms`);
+          } else {
+            // 실시간 시간이 계산되지 않은 경우 기존 방식 사용
+            const days = Math.floor(reservationSettings.timeUntilOpen / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((reservationSettings.timeUntilOpen % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((reservationSettings.timeUntilOpen % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((reservationSettings.timeUntilOpen % (1000 * 60)) / 1000);
+            setError(`아직 예약 오픈 시간이 아닙니다.\n오픈 예정: ${openDateTimeKorean}\n남은 시간: ${days}일 ${hours}시간 ${minutes}분 ${seconds}초`);
+          }
         } else {
           setError(`예약이 마감되었습니다.\n오픈 예정: ${openDateTimeKorean}`);
         }
@@ -268,15 +325,21 @@ const Rooms = () => {
                         month: '2-digit',
                         day: '2-digit',
                         hour: '2-digit',
-                        minute: '2-digit'
+                        minute: '2-digit',
+                        timeZone: 'Asia/Seoul'
                       })}
-                      {reservationSettings.timeUntilOpen > 0 && (
-                        <span className="countdown">
-                          {' '}(남은 시간: {Math.floor(reservationSettings.timeUntilOpen / (1000 * 60 * 60 * 24))}일{' '}
-                          {Math.floor((reservationSettings.timeUntilOpen % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))}시간{' '}
-                          {Math.floor((reservationSettings.timeUntilOpen % (1000 * 60 * 60)) / (1000 * 60))}분)
-                        </span>
-                      )}
+                      {(() => {
+                        const timeRemaining = formatRealTimeRemaining();
+                        return timeRemaining && (
+                          <span className="countdown">
+                            {' '}(남은 시간: {timeRemaining.days}일{' '}
+                            {timeRemaining.hours}시간{' '}
+                            {timeRemaining.minutes}분{' '}
+                            {timeRemaining.seconds}초{' '}
+                            {timeRemaining.milliseconds.toString().padStart(3, '0')}ms)
+                          </span>
+                        );
+                      })()}
                     </>
                   )}
                 </p>

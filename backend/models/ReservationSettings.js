@@ -33,12 +33,26 @@ reservationSettingsSchema.index({ _id: 1 }, { unique: true });
 // 현재 시간이 오픈 시간을 지났는지 확인하는 메서드
 reservationSettingsSchema.methods.isOpenNow = function() {
   const now = new Date();
-  return this.isReservationOpen && now >= this.openDateTime;
+  
+  // 수동으로 오픈했거나, 설정된 시간이 지났으면 오픈
+  const timeHasPassed = now >= this.openDateTime;
+  const isOpen = this.isReservationOpen || timeHasPassed;
+  
+  console.log('🕐 예약 오픈 확인:', {
+    현재시간: now.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}),
+    오픈시간: this.openDateTime.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}),
+    수동오픈상태: this.isReservationOpen,
+    시간경과여부: timeHasPassed,
+    최종오픈여부: isOpen
+  });
+  
+  return isOpen;
 };
 
 // 오픈까지 남은 시간을 반환하는 메서드
 reservationSettingsSchema.methods.getTimeUntilOpen = function() {
   const now = new Date();
+  
   if (now >= this.openDateTime) {
     return 0;
   }

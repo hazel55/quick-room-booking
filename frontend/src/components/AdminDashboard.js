@@ -93,9 +93,31 @@ const AdminDashboard = () => {
       
       if (data.success) {
         setReservationSettings(data.data);
-        const openDateTime = new Date(data.data.openDateTime);
+        
+        // 서버에서 받은 UTC 시간을 한국 시간으로 변환
+        const utcDateTime = new Date(data.data.openDateTime);
+        
+        // UTC 시간을 한국 시간으로 변환 (UTC + 9시간)
+        const koreaDateTime = new Date(utcDateTime.getTime() + (9 * 60 * 60 * 1000));
+        
+        // datetime-local 형식으로 변환
+        const year = koreaDateTime.getUTCFullYear();
+        const month = String(koreaDateTime.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(koreaDateTime.getUTCDate()).padStart(2, '0');
+        const hour = String(koreaDateTime.getUTCHours()).padStart(2, '0');
+        const minute = String(koreaDateTime.getUTCMinutes()).padStart(2, '0');
+        const localDateTimeString = `${year}-${month}-${day}T${hour}:${minute}`;
+        
+        console.log('🕐 UTC → 한국시간 변환:', {
+          서버UTC: data.data.openDateTime,
+          UTC객체: utcDateTime.toISOString(),
+          한국시간객체: koreaDateTime.toISOString(),
+          표시값: localDateTimeString,
+          검증: koreaDateTime.toLocaleString('ko-KR')
+        });
+        
         setSettingsForm({
-          openDateTime: openDateTime.toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm 형식
+          openDateTime: localDateTimeString,
           isReservationOpen: data.data.isReservationOpen,
           description: data.data.description || ''
         });
@@ -112,6 +134,12 @@ const AdminDashboard = () => {
         alert('오픈 일시를 선택해주세요.');
         return;
       }
+
+      // 입력된 datetime-local 값을 그대로 사용 (서버가 한국 시간대로 설정됨)
+      console.log('📤 간단 시간 저장:', {
+        입력값: settingsForm.openDateTime,
+        현재한국시간: new Date().toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'})
+      });
 
       const response = await reservationSettingsAPI.updateSettings({
         openDateTime: settingsForm.openDateTime,
@@ -1109,8 +1137,15 @@ const AdminDashboard = () => {
                           day: '2-digit',
                           hour: '2-digit',
                           minute: '2-digit',
-                          second: '2-digit'
+                          second: '2-digit',
+                          timeZone: 'Asia/Seoul'
                         })}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        현재 시간: {new Date().toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'})}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        서버 저장 시간: {reservationSettings.openDateTime}
                       </p>
                     </div>
                     {!reservationSettings.isOpenNow && reservationSettings.timeUntilOpen > 0 && (
@@ -1150,7 +1185,7 @@ const AdminDashboard = () => {
                 {/* 오픈 일시 설정 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    예약 오픈 일시 <span className="text-red-500">*</span>
+                    예약 오픈 일시 (한국 시간) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="datetime-local"
@@ -1160,7 +1195,7 @@ const AdminDashboard = () => {
                     required
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    설정한 일시가 되면 사용자들이 방 예약을 할 수 있습니다.
+                    한국 시간(KST) 기준으로 입력해주세요. 설정한 일시가 되면 사용자들이 방 예약을 할 수 있습니다.
                   </p>
                 </div>
 
