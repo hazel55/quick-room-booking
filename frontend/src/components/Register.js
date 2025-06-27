@@ -545,7 +545,7 @@ const Register = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">2. 출발일 집결 시간 및 장소</h4>
-                      <p className="pl-4">8월 1일(금) 오전 9시 교회[이음센터 7층 고등부실]에 모여 출발합니다.</p>
+                      <p className="pl-4">8월 1일(금) 오전 9시 본당 지하1층 드림홀에 모여 출발합니다.</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">3. 8월 3일(주일) 예배 안내</h4>
@@ -568,8 +568,9 @@ const Register = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">6. 후원 방법</h4>
-                      <li className="text-xs pl-5">후원을 원하시는 가정은 교회 지정헌금 계좌로 입금해 주세요!</li>
-                      <p className="pl-4">국민은행 992-76-799147 (더사랑의교회)로 "이름+후원부서" 형식으로 입금해주세요. (예: 김사랑C고등부)</p>
+                      <li className="text-xs pl-5">후원을 원하시는 가정은 국민은행 992-76-799147 (더사랑의교회)로 입금해 주시면 감사하겠습니다.</li>
+                      <p className="pl-4">입금시 '이름+생년월+후원부서'로 기재해 주시면 됩니다. 
+                        예) 김사랑C9012고등</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">7. 교역자 연락처</h4>

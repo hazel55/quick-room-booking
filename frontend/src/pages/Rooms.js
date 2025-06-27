@@ -110,8 +110,8 @@ const Rooms = () => {
   };
 
   const openReservationModal = (room) => {
-    // 예약 오픈 시간 확인
-    if (!isReservationOpen) {
+    // 예약 오픈 시간 확인 (실제 예약 시에만 체크)
+    if (!isReservationOpen && room.availableBeds > 0) {
       if (reservationSettings) {
         const openDateTime = new Date(reservationSettings.openDateTime);
         const openDateTimeKorean = openDateTime.toLocaleString('ko-KR', {
@@ -137,17 +137,13 @@ const Rooms = () => {
       return;
     }
 
-    // 성별 체크
-    if (room.gender !== user.gender) {
+    // 성별 체크 (실제 예약 시에만 체크)
+    if (room.gender !== user.gender && room.availableBeds > 0) {
       setError(`이 방은 ${room.gender}용 방입니다. ${user.gender === '남자' ? '남성' : '여성'}용 방을 선택해주세요.`);
       return;
     }
 
-    if (room.availableBeds === 0) {
-      setError('이 방은 만실입니다. 다른 방을 선택해주세요.');
-      return;
-    }
-
+    // 만실인 경우 확인용으로만 열기
     setSelectedRoom(room);
     setSelectedBed(null);
     setSpecialRequests('');
@@ -431,8 +427,11 @@ const Rooms = () => {
                       성별 불일치
                     </button>
                   ) : room.availableBeds === 0 ? (
-                    <button className="btn-reserve disabled" disabled>
-                      만실
+                    <button 
+                      className="btn-reserve full-view"
+                      onClick={() => openReservationModal(room)}
+                    >
+                      확인하기
                     </button>
                   ) : (
                     <button 
@@ -466,6 +465,11 @@ const Rooms = () => {
                   <p><strong>인실:</strong> {selectedRoom.capacity}인실</p>
                   <p><strong>성별:</strong> {selectedRoom.gender === 'M' ? '남성용' : selectedRoom.gender === 'F' ? '여성용' : selectedRoom.gender}</p>
                   <p><strong>사용 가능 번호:</strong> {selectedRoom.availableBeds}개</p>
+                  {selectedRoom.availableBeds === 0 && (
+                    <div className="full-room-notice">
+                      <p><strong>⚠️ 이 방은 만실입니다. 예약이 불가능합니다.</strong></p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bed-selection">
@@ -485,8 +489,6 @@ const Rooms = () => {
                   </p>
                 </div>
 
-
-
                 {error && (
                   <div className="alert alert-error">
                     {error}
@@ -500,15 +502,17 @@ const Rooms = () => {
                   onClick={closeModal}
                   disabled={reservationLoading}
                 >
-                  취소
+                  {selectedRoom.availableBeds === 0 ? '닫기' : '취소'}
                 </button>
-                <button 
-                  className="btn-confirm" 
-                  onClick={handleReservation}
-                  disabled={reservationLoading || !selectedBed}
-                >
-                  {reservationLoading ? '예약 중...' : '예약 확정'}
-                </button>
+                {selectedRoom.availableBeds > 0 && (
+                  <button 
+                    className="btn-confirm" 
+                    onClick={handleReservation}
+                    disabled={reservationLoading || !selectedBed}
+                  >
+                    {reservationLoading ? '예약 중...' : '예약 확정'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
