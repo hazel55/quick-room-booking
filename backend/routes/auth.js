@@ -12,8 +12,8 @@ const router = express.Router();
 router.post('/register', [
   body('name', '이름을 입력해주세요').notEmpty().trim(),
   body('email', '올바른 이메일을 입력해주세요').isEmail().normalizeEmail(),
-  body('password', '비밀번호는 최소 8자 이상이어야 하며, 영문, 숫자, 특수문자를 포함해야 합니다')
-    .isLength({ min: 8 })
+  body('password', '비밀번호는 최소 6자 이상이어야 하며, 영문, 숫자, 특수문자를 포함해야 합니다')
+    .isLength({ min: 6 })
     .matches(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/),
   body('phone', '전화번호를 입력해주세요').notEmpty().custom((value) => {
     // 숫자만 남기기

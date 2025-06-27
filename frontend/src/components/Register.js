@@ -349,8 +349,8 @@ const Register = () => {
     // 비밀번호 검증
     if (!formData.password) {
       newErrors.password = '비밀번호를 입력해주세요';
-    } else if (formData.password.length < 8) {
-      newErrors.password = '비밀번호는 최소 8자 이상이어야 합니다';
+    } else if (formData.password.length < 6) {
+      newErrors.password = '비밀번호는 최소 6자 이상이어야 합니다';
     } else if (!/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(formData.password)) {
       newErrors.password = '비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다';
     }
@@ -716,7 +716,7 @@ const Register = () => {
                     <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
                       비밀번호 <span className="text-red-600">*</span>
                     </label>
-                    <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="영문, 숫자, 특수문자 포함 8자 이상" />
+                    <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="영문, 숫자, 특수문자 포함 6자 이상" />
                     {renderError('password')}
                   </div>
                   <div>
