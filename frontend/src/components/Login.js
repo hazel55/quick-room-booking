@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -84,9 +84,12 @@ const Login = () => {
             </h2>
             <p className="text-sm text-gray-600">
               계정이 없으신가요?{' '}
-              <Link to="/register" className="text-indigo-600 hover:text-indigo-500 font-medium">
+              <button 
+                onClick={() => alert('더사랑의교회 고등부 수련회 신청이 마감되었습니다.\n\n관련 문의:\n• 고등부 김성은 강도사 (010-7189-3068)\n• 부장 문병필 선생님 (010-9119-8837)')}
+                className="text-indigo-600 hover:text-indigo-500 font-medium cursor-pointer underline"
+              >
                 수련회 참가 신청 및 회원가입 하기
-              </Link>
+              </button>
             </p>
           </div>
           

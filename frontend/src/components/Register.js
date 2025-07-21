@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,6 +29,19 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  // 컴포넌트 마운트 시 마감 알림 표시
+  useEffect(() => {
+    const showClosedAlert = () => {
+      alert('더사랑의교회 고등부 수련회 신청이 마감되었습니다.\n\n관련 문의:\n• 고등부 김성은 강도사 (010-7189-3068)\n• 부장 문병필 선생님 (010-9119-8837)');
+      navigate('/login');
+    };
+
+    // 약간의 지연을 두어 컴포넌트가 완전히 마운트된 후 알림 표시
+    const timer = setTimeout(showClosedAlert, 100);
+    
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -916,7 +929,7 @@ const Register = () => {
               <div className="pt-5">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={true}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   {loading ? (
