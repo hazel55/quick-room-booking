@@ -644,7 +644,7 @@ const Register = () => {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            2025년 더사랑의교회 고등부 여름 수련회
+            2026년 더사랑의교회 고등부 여름 수련회
           </h2>
           <p className="mt-3 text-base text-gray-500">
             수련회 참가 신청과 회원가입을 해주세요.
@@ -669,28 +669,28 @@ const Register = () => {
                     <div>
                       <h4 className="font-semibold text-blue-800">1. 개요</h4>
                       <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li><span className="font-medium">일정:</span> 2025년 8월 1일(금) ~ 3일(주일)</li>
+                        <li><span className="font-medium">일정:</span> 2026년 8월 7일(금) ~ 9일(주일)</li>
                         <li className="text-xs pl-5">※ 주일 예배는 고등부실에서 드립니다.</li>
                         <li><span className="font-medium">장소:</span> 용인 대웅경영개발원 (경기도 용인시 처인구 두계로 72)</li>
                       </ul>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">2. 출발일 집결 시간 및 장소</h4>
-                      <p className="pl-4">8월 1일(금) 오전 9시 본당 지하1층 드림홀에 모여 출발합니다.</p>
+                      <p className="pl-4">8월 7일(금) 오전 9시 본당 지하1층 드림홀에 모여 출발합니다.</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-800">3. 8월 3일(주일) 예배 안내</h4>
-                      <p className="pl-4"><span className="font-medium">시간/장소:</span> 오전 9시 20분 / 이음센터 7층</p>
+                      <h4 className="font-semibold text-blue-800">3. 8월 9일(주일) 예배 안내</h4>
+                      <p className="pl-4"><span className="font-medium">시간/장소:</span> 오전 9시 10분 / 이음센터 7층</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">4. 신청 및 등록</h4>
                       <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li><span className="font-medium">신청기간:</span> 7월 5일 오후 5시까지 링크를 통해 신청</li>
+                        <li><span className="font-medium">신청기간:</span> 7월 12일 오전 11시 30분에 선착순으로 방을 신청합니다.</li>
+                        <li><span className="font-mediun"></span>7월 5일(주일) 가입 페이지 공유 예정</li>
                         <li><span className="font-medium">수련회비:</span> 100,000원</li>
-                        <li><span className="font-medium">입금 계좌:</span> 3333-23-6992886 카카오뱅크 (주연진)</li>
+                        <li><span className="font-medium">입금 계좌:</span> 900321-31-07689 새마을금고 김자영</li>
                         <li className="text-xs pl-5">※ 입금하실 때, 꼭 "학년-반 이름"으로 입금해주세요. (ex. 1-1 홍길동)</li>
                         <li className="text-xs pl-5">※ 수련회 시설은 사전 계약이 이루어지므로 부분 참석 시에도 할인은 없습니다.</li>
-                        <li className="text-xs pl-5">※ 7월 6일 오전 11시 30분에 선착순으로 방을 신청합니다.</li>
                       </ul>
                     </div>
                     <div>
@@ -699,15 +699,26 @@ const Register = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">6. 후원 방법</h4>
-                      <li className="text-xs pl-5">후원을 원하시는 가정은 국민은행 992-76-799147 (더사랑의교회)로 입금해 주시면 감사하겠습니다.</li>
+                      <li className="list-disc list-inside pl-2 text-gray-700">후원을 원하시는 가정은 국민은행 992-76-799147 (더사랑의교회)로 입금해 주시면 감사하겠습니다.</li>
                       <p className="pl-4">입금시 '이름+생년월+후원부서'로 기재해 주시면 됩니다. 
                         예) 김사랑C9012고등</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-800">7. 교역자 연락처</h4>
+                      <h4 className="font-semibold text-blue-800">7. 회비 환불 안내</h4>
+                      <p className="pl-4">
+                      수련회 회비는 숙소, 차량, 식사 및 프로그램 운영을 위해 사전에 집행됩니다. 수련회 7일 전부터는 수련회장과 인원 확정 및 계약이 완료되어 취소에 따른 환불이 제한되기에 위 기준으로 진행하는 점 양해 부탁드립니다. 
+                      </p>
                        <ul className="list-disc list-inside pl-2 text-gray-700">
+                        <li>~7/31까지 : 100% 환불</li>
+                        <li>8/1~8/5  : 50% 환불</li>
+                        <li>8/6~     : 환불 불가</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">8. 교역자 연락처</h4>
+                      <ul className="list-disc list-inside pl-2 text-gray-700">
                         <li>김성은 목사: 010-7189-3068</li>
-                        <li>부장 권기열 선생님: 010-6235-2893</li>
+                        <li>부장 권기열 선생님: 010-6235-2893</li>  
                       </ul>
                     </div>
                   </div>
