@@ -134,4 +134,14 @@ export const reservationSettingsAPI = {
   toggleOpen: () => api.patch('/reservation-settings/toggle'),
 };
 
+// 엑셀 업로드 API (관리자용)
+export const uploadAPI = {
+  uploadUsers: (formData) => api.post("/users/upload-excel", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  }),
+  uploadRooms: (formData) => api.post("/rooms/upload-excel", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  }),
+};
+
 export default api; 

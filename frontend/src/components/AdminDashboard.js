@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { userAPI, roomAPI, reservationSettingsAPI } from '../utils/api';
+import { userAPI, roomAPI, reservationSettingsAPI, uploadAPI } from '../utils/api';
+import * as XLSX from 'xlsx';
 import './Modal.css';
 import '../styles/dashboard.css';
 
@@ -50,6 +51,16 @@ const AdminDashboard = () => {
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBedNumber, setSelectedBedNumber] = useState('');
+
+  // 엑셀 업로드 관련 상태 (회원)
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [showUploadResult, setShowUploadResult] = useState(false);
+
+  // 엑셀 업로드 관련 상태 (방)
+  const [roomUploadLoading, setRoomUploadLoading] = useState(false);
+  const [roomUploadResult, setRoomUploadResult] = useState(null);
+  const [showRoomUploadResult, setShowRoomUploadResult] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -461,6 +472,108 @@ const AdminDashboard = () => {
     document.body.removeChild(link);
   };
 
+  // 엑셀 양식 다운로드
+  const downloadTemplate = () => {
+    const headers = [
+      '이름', '이메일', '비밀번호', '전화번호', '주민등록번호',
+      '학년', '반', '성별', '보호자전화번호', '보호자관계'
+    ];
+    const example = [
+      '홍길동', 'hong@example.com', 'password123', '01012345678', '9001011234567',
+      '1', '3', 'M', '01098765432', '부'
+    ];
+    const notes = [
+      '※ 학년: 1/2/3/T(선생님)/A(관리자)',
+      '※ 반: 1~10 또는 N(새가족/미배정), 선생님/관리자는 비워두세요',
+      '※ 성별: M(남성) 또는 F(여성)',
+      '※ 보호자관계: 부/모/조부/조모/외조부/외조모/형제/자매/친척/친구/기타',
+      '※ 주민등록번호: 하이픈(-) 없이 13자리 숫자',
+      '※ 전화번호: 하이픈(-) 없이 11자리 숫자 (01로 시작)',
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const wsData = [headers, example, [], ...notes.map(n => [n])];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // 열 너비 설정
+    ws['!cols'] = headers.map((h, i) => ({
+      wch: [8, 25, 15, 15, 16, 6, 4, 6, 15, 12][i] || 15
+    }));
+
+    XLSX.utils.book_append_sheet(wb, ws, '회원등록양식');
+    XLSX.writeFile(wb, '회원등록_양식.xlsx');
+  };
+
+  // 엑셀 파일 업로드
+  const handleExcelUpload = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setUploadLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await uploadAPI.uploadUsers(formData);
+      setUploadResult(response.data);
+      setShowUploadResult(true);
+      if (response.data.successCount > 0) {
+        loadUsers();
+      }
+    } catch (err) {
+      alert('업로드 실패: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  // 방 엑셀 양식 다운로드
+  const downloadRoomTemplate = () => {
+    const headers = ['방번호', '층', '수용인원', '성별', '설명'];
+    const examples = [
+      ['101', '1', '4', 'M', '남성 4인실'],
+      ['201', '2', '3', 'F', '여성 3인실'],
+      ['301', '3', '2', 'M', ''],
+    ];
+    const notes = [
+      ['※ 방번호: 고유한 방 번호 (최대 12자)'],
+      ['※ 층: 1~10 사이 숫자'],
+      ['※ 수용인원: 2, 3, 4, 10, 20 중 하나'],
+      ['※ 성별: M(남성) 또는 F(여성)'],
+      ['※ 설명: 선택사항'],
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const wsData = [headers, ...examples, [], ...notes];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [{ wch: 12 }, { wch: 6 }, { wch: 10 }, { wch: 8 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, ws, '방등록양식');
+    XLSX.writeFile(wb, '방등록_양식.xlsx');
+  };
+
+  // 방 엑셀 업로드
+  const handleRoomExcelUpload = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setRoomUploadLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await uploadAPI.uploadRooms(formData);
+      setRoomUploadResult(response.data);
+      setShowRoomUploadResult(true);
+      if (response.data.successCount > 0) {
+        loadRooms();
+      }
+    } catch (err) {
+      alert('업로드 실패: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setRoomUploadLoading(false);
+    }
+  };
+
   // 사용자 검색 (개선된 버전)
   const searchUsers = async (query) => {
     console.log('🔍 검색 시작:', query);
@@ -689,13 +802,34 @@ const AdminDashboard = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h2 className="text-lg font-medium text-gray-900">회원 목록</h2>
-              <button
-                onClick={downloadExcel}
-                disabled={users.length === 0}
-                className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                엑셀 다운로드
-              </button>
+              <div className="flex flex-wrap gap-2">
+                {/* 엑셀 양식 다운로드 */}
+                <button
+                  onClick={downloadTemplate}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                  양식 다운로드
+                </button>
+                {/* 엑셀 업로드 */}
+                <label className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium text-white transition-colors duration-200 ${uploadLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}>
+                  {uploadLoading ? '업로드 중...' : '엑셀 업로드'}
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleExcelUpload}
+                    disabled={uploadLoading}
+                    className="hidden"
+                  />
+                </label>
+                {/* 회원 목록 다운로드 */}
+                <button
+                  onClick={downloadExcel}
+                  disabled={users.length === 0}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  엑셀 다운로드
+                </button>
+              </div>
             </div>
 
             <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
@@ -892,12 +1026,33 @@ const AdminDashboard = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h2 className="text-lg font-medium text-gray-900">방 관리</h2>
-              <button
-                onClick={() => setShowRoomModal(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
-              >
-                방 등록
-              </button>
+              <div className="flex flex-wrap gap-2">
+                {/* 엑셀 양식 다운로드 */}
+                <button
+                  onClick={downloadRoomTemplate}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                  양식 다운로드
+                </button>
+                {/* 엑셀 일괄 업로드 */}
+                <label className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium text-white transition-colors duration-200 ${roomUploadLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}>
+                  {roomUploadLoading ? '업로드 중...' : '엑셀 업로드'}
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleRoomExcelUpload}
+                    disabled={roomUploadLoading}
+                    className="hidden"
+                  />
+                </label>
+                {/* 방 개별 등록 */}
+                <button
+                  onClick={() => setShowRoomModal(true)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                  방 등록
+                </button>
+              </div>
             </div>
 
             {/* 필터 영역 */}
@@ -1556,6 +1711,100 @@ const AdminDashboard = () => {
                 type="button"
               >
                 {editingRoom ? '수정' : '등록'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* 엑셀 업로드 결과 모달 */}
+      {showUploadResult && uploadResult && createPortal(
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">업로드 결과</h3>
+              <button onClick={() => setShowUploadResult(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              <p className="text-sm text-gray-700 mb-4">{uploadResult.message}</p>
+              <div className="flex gap-4 mb-4">
+                <div className="flex-1 bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-green-600">{uploadResult.successCount}</div>
+                  <div className="text-xs text-green-700 mt-1">성공</div>
+                </div>
+                <div className="flex-1 bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-red-600">{uploadResult.failedCount}</div>
+                  <div className="text-xs text-red-700 mt-1">실패</div>
+                </div>
+              </div>
+              {uploadResult.failedList && uploadResult.failedList.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-red-600 mb-2">실패 목록</h4>
+                  <div className="space-y-1">
+                    {uploadResult.failedList.map((item, idx) => (
+                      <div key={idx} className="text-xs bg-red-50 border border-red-100 rounded px-3 py-2">
+                        <span className="font-medium">{item.row}행 {item.name || '(이름없음)'}</span>
+                        <span className="text-red-600 ml-2">{item.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowUploadResult(false)}
+                className="w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* 방 엑셀 업로드 결과 모달 */}
+      {showRoomUploadResult && roomUploadResult && createPortal(
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">방 업로드 결과</h3>
+              <button onClick={() => setShowRoomUploadResult(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              <p className="text-sm text-gray-700 mb-4">{roomUploadResult.message}</p>
+              <div className="flex gap-4 mb-4">
+                <div className="flex-1 bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-green-600">{roomUploadResult.successCount}</div>
+                  <div className="text-xs text-green-700 mt-1">성공</div>
+                </div>
+                <div className="flex-1 bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-red-600">{roomUploadResult.failedCount}</div>
+                  <div className="text-xs text-red-700 mt-1">실패</div>
+                </div>
+              </div>
+              {roomUploadResult.failedList && roomUploadResult.failedList.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-red-600 mb-2">실패 목록</h4>
+                  <div className="space-y-1">
+                    {roomUploadResult.failedList.map((item, idx) => (
+                      <div key={idx} className="text-xs bg-red-50 border border-red-100 rounded px-3 py-2">
+                        <span className="font-medium">{item.row}행 {item.roomNumber || '(방번호없음)'}</span>
+                        <span className="text-red-600 ml-2">{item.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowRoomUploadResult(false)}
+                className="w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+              >
+                확인
               </button>
             </div>
           </div>

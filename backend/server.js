@@ -16,7 +16,9 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://snl.blifeinc.com',
-  'https://snl.blifeinc.com'
+  'https://snl.blifeinc.com',
+  'http://booking.blifeinc.com',
+  'https://booking.blifeinc.com'
 ];
 
 app.use(cors({
@@ -55,7 +57,9 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/room-assi
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/users', require('./routes/usersUpload'));
 app.use('/api/rooms', require('./routes/rooms'));
+app.use('/api/rooms', require('./routes/roomsUpload'));
 app.use('/api/reservations', require('./routes/reservations'));
 app.use('/api/reservation-settings', require('./routes/reservationSettings'));
 
