@@ -162,7 +162,7 @@ const Rooms = () => {
   };
 
   const openReservationModal = (room) => {
-    if (!hasDepositorName) {
+    if (!hasDepositorName && /^[0-9]+$/.test(user.grade)) {
       setError('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다. 회원가입 시 입금자 이름을 입력했는지 확인해주세요.');
       return;
     }
@@ -216,7 +216,7 @@ const Rooms = () => {
   };
 
   const handleReservation = async () => {
-    if (!hasDepositorName) {
+    if (!hasDepositorName && /^[0-9]+$/.test(user.grade)) {
       setError('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다.');
       return;
     }
@@ -375,7 +375,7 @@ const Rooms = () => {
           </div>
         )}
 
-        {!hasDepositorName && (
+        {!hasDepositorName && /^[0-9]+$/.test(user.grade) && (
           <div className="alert alert-error">
             <span>
               입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다.
