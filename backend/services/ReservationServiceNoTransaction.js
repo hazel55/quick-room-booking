@@ -29,7 +29,7 @@ class ReservationServiceNoTransaction {
       const isAdminAssignment = requestInfo.performedBy
         && requestInfo.performedBy.toString() !== userId.toString();
 
-      if (!isAdminAssignment && (!user.depositorName || !user.depositorName.trim())) {
+      if (!isAdminAssignment && /^[0-9]+$/.test(user.grade) && (!user.depositorName || !user.depositorName.trim())) {
         throw new Error('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다.');
       }
 
