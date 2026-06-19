@@ -442,19 +442,21 @@ const Register = () => {
       }
     }
 
-    // 입금 여부 검증
-    if (!formData.depositeYn) {
-      newErrors.depositeYn = '입금 여부를 선택해주세요';
-    }
+    // 입금 여부 검증 (학생만)
+    if (/^[0-9]+$/.test(formData.grade)){
+      if (!formData.depositeYn) {
+        newErrors.depositeYn = '입금 여부를 선택해주세요';
+      }
 
-    // 입금 완료시 입금자명 필수
-    if (formData.depositeYn === 'Y' && !formData.depositorName.trim()) {
-      newErrors.depositorName = '입금자 이름을 입력해주세요';
-    }
+      // 입금 완료시 입금자명 필수
+      if (formData.depositeYn === 'Y' && !formData.depositorName.trim()) {
+        newErrors.depositorName = '입금자 이름을 입력해주세요';
+      }
 
-    // 미입금시 회원가입 불가
-    if (formData.depositeYn === 'N') {
-      newErrors.depositeYn = '입금 전에는 회원가입이 불가능합니다.';
+      // 미입금시 회원가입 불가
+      if (formData.depositeYn === 'N') {
+        newErrors.depositeYn = '입금 전에는 회원가입이 불가능합니다.';
+      }
     }
     // 성별 검증  
     if (!formData.gender) {
@@ -489,9 +491,9 @@ const Register = () => {
     }
 
     // 입금자 이름 검증
-    if (formData.depositeYn === 'Y' && !formData.depositorName.trim()) {
+    if (formData.depositeYn === 'Y' && /^[0-9]+$/.test(formData.grade) && !formData.depositorName.trim()) {
       newErrors.depositorName = '입금자 이름을 입력해주세요';
-    } else if (formData.depositeYn === 'Y' && formData.depositorName.trim().length < 2) {
+    } else if (formData.depositeYn === 'Y' && /^[0-9]+$/.test(formData.grade) && formData.depositorName.trim().length < 2) {
       newErrors.depositorName = '입금자 이름은 2자 이상 입력해주세요';
     }
 
@@ -708,7 +710,7 @@ const Register = () => {
                     <div>
                       <h4 className="font-semibold text-blue-800">7. 회비 환불 안내</h4>
                       <p className="pl-4">
-                      수련회 회비는 숙소, 차량, 식사 및 프로그램 운영을 위해 사전에 집행됩니다. 수련회 7일 전부터는 수련회장과 인원 확정 및 계약이 완료되어 취소에 따른 환불이 제한되기에 위 기준으로 진행하는 점 양해 부탁드립니다. 
+                      수련회 회비는 숙소, 차량, 식사 및 프로그램 운영을 위해 사전에 집행됩니다. 수련회 7일 전부터는 수련회장과 인원 확정 및 계약이 완료되어 취소에 따른 환불이 제한되기에 아래 기준으로 진행하는 점 양해 부탁드립니다. 
                       </p>
                        <ul className="list-disc list-inside pl-2 text-gray-700">
                         <li>~7/31까지&nbsp;&nbsp;: 100% 환불</li>
@@ -945,6 +947,7 @@ const Register = () => {
               </fieldset>
 
               {/* 입금 정보 */}
+              {/^[0-9]+$/.test(formData.grade) && ( /* 선생님은 입금여부 받지 않음*/
               <fieldset className="space-y-4">
                 <legend className="text-lg font-semibold text-gray-900">회비 납부 정보</legend>
                 <div>
@@ -982,6 +985,7 @@ const Register = () => {
                 </div>
               )}
               </fieldset>
+              )}
 
               {/* 보호자 정보 */}
               <fieldset className="space-y-4">
