@@ -100,6 +100,7 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (credentials) => api.post('/auth/login', credentials),
   getProfile: () => api.get('/auth/me'),
+  updateDepositorName: (depositorName) => api.patch('/auth/depositor-name', { depositorName }),
 };
 
 // 사용자 관리 API (관리자용)

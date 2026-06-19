@@ -147,6 +147,30 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
+  const updateDepositorName = async (depositorName) => {
+    try {
+      const response = await authAPI.updateDepositorName(depositorName);
+      const updatedUser = response.data.user;
+
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      console.error('입금자명 수정 오류:', error);
+
+      const validationErrors = error.response?.data?.errors;
+      const detailedMessage = Array.isArray(validationErrors)
+        ? (validationErrors[0]?.msg || validationErrors[0])
+        : null;
+
+      return {
+        success: false,
+        message: detailedMessage || error.response?.data?.message || '입금자명 저장 중 오류가 발생했습니다'
+      };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -154,7 +178,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    loadUser
+    loadUser,
+    updateDepositorName
   };
 
   return (

@@ -44,9 +44,12 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator: function(value) {
-        // 암호화된 값이 아닌 경우에만 유효성 검사
-        if (!this.isNew && this.isModified('ssn')) {
-          return true; // 이미 저장된 암호화된 값
+        // 이미 암호화된 값이거나, 기존 문서에서 ssn이 변경되지 않은 경우 검증 생략
+        if (value && value.length > 13) {
+          return true;
+        }
+        if (!this.isNew && !this.isModified('ssn')) {
+          return true;
         }
         return validateSSN(value);
       },

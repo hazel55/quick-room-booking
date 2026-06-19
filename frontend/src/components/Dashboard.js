@@ -5,15 +5,26 @@ import api from '../utils/api';
 import '../styles/dashboard.css';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateDepositorName } = useAuth();
   const navigate = useNavigate();
   const [reservation, setReservation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [depositorName, setDepositorName] = useState('');
+  const [isEditingDepositorName, setIsEditingDepositorName] = useState(false);
+  const [depositorNameSaving, setDepositorNameSaving] = useState(false);
+  const [depositorNameError, setDepositorNameError] = useState('');
+  const [depositorNameSuccess, setDepositorNameSuccess] = useState('');
+
+  const isStudent = /^[0-9]+$/.test(user?.grade || '');
 
   // 예약 정보 로드
   useEffect(() => {
     fetchMyReservation();
   }, []);
+
+  useEffect(() => {
+    setDepositorName(user?.depositorName || '');
+  }, [user?.depositorName]);
 
   const fetchMyReservation = async () => {
     try {
@@ -37,6 +48,45 @@ const Dashboard = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleDepositorNameSave = async () => {
+    const trimmedName = depositorName.trim();
+
+    if (!trimmedName) {
+      setDepositorNameError('입금자 이름을 입력해주세요');
+      setDepositorNameSuccess('');
+      return;
+    }
+
+    if (trimmedName.length < 2) {
+      setDepositorNameError('입금자 이름은 2자 이상 입력해주세요');
+      setDepositorNameSuccess('');
+      return;
+    }
+
+    setDepositorNameSaving(true);
+    setDepositorNameError('');
+    setDepositorNameSuccess('');
+
+    const result = await updateDepositorName(trimmedName);
+
+    setDepositorNameSaving(false);
+
+    if (result.success) {
+      setDepositorName(result.user.depositorName || '');
+      setIsEditingDepositorName(false);
+      setDepositorNameSuccess('입금자명이 저장되었습니다');
+    } else {
+      setDepositorNameError(result.message);
+    }
+  };
+
+  const handleDepositorNameCancel = () => {
+    setDepositorName(user?.depositorName || '');
+    setIsEditingDepositorName(false);
+    setDepositorNameError('');
+    setDepositorNameSuccess('');
   };
 
   return (
@@ -139,6 +189,69 @@ const Dashboard = () => {
                 <span className="text-sm font-medium text-gray-500">성별:</span>
                 <span className="text-sm text-gray-900">{user?.gender}</span>
               </div>
+              {isStudent && (
+                <div className="pt-3 border-t border-gray-100">
+                  <div className="flex justify-between items-start gap-3">
+                    <span className="text-sm font-medium text-gray-500 shrink-0">입금자명:</span>
+                    {!isEditingDepositorName ? (
+                      <div className="text-right">
+                        <span className="text-sm text-gray-900">
+                          {user?.depositorName?.trim() || '미등록'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingDepositorName(true);
+                            setDepositorNameError('');
+                            setDepositorNameSuccess('');
+                          }}
+                          className="block ml-auto mt-1 text-xs text-indigo-600 hover:text-indigo-800"
+                        >
+                          {user?.depositorName?.trim() ? '수정' : '등록'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex-1 min-w-0">
+                        <input
+                          type="text"
+                          value={depositorName}
+                          onChange={(e) => setDepositorName(e.target.value)}
+                          maxLength={50}
+                          placeholder="예) 1-1 김사랑"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          수련회비 입금 시 사용한 이름을 입력해주세요.
+                        </p>
+                        {depositorNameError && (
+                          <p className="text-xs text-red-600 mt-1">{depositorNameError}</p>
+                        )}
+                        <div className="flex justify-end gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={handleDepositorNameCancel}
+                            disabled={depositorNameSaving}
+                            className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
+                          >
+                            취소
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleDepositorNameSave}
+                            disabled={depositorNameSaving}
+                            className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                          >
+                            {depositorNameSaving ? '저장 중...' : '저장'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {depositorNameSuccess && !isEditingDepositorName && (
+                    <p className="text-xs text-green-600 mt-2 text-right">{depositorNameSuccess}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

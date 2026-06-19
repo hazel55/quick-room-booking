@@ -237,6 +237,76 @@ router.post('/login', [
   }
 });
 
+// @desc    입금자명 수정 (학생 전용)
+// @route   PATCH /api/auth/depositor-name
+// @access  Private
+router.patch('/depositor-name', protect, [
+  body('depositorName', '입금자 이름을 입력해주세요')
+    .notEmpty()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('입금자 이름은 2자 이상 50자 이하로 입력해주세요')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: '입력 정보를 확인해주세요',
+        errors: errors.array()
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다' });
+    }
+
+    if (!/^[0-9]+$/.test(user.grade)) {
+      return res.status(403).json({ message: '학생만 입금자명을 수정할 수 있습니다' });
+    }
+
+    const trimmedDepositorName = req.body.depositorName.trim();
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { depositorName: trimmedDepositorName },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다' });
+    }
+
+    res.json({
+      message: '입금자명이 저장되었습니다',
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        grade: updatedUser.grade,
+        classNumber: updatedUser.classNumber,
+        gender: updatedUser.gender,
+        role: updatedUser.role,
+        adminAccess: updatedUser.adminAccess,
+        roomAssignment: updatedUser.roomAssignment,
+        depositorName: updatedUser.depositorName
+      }
+    });
+  } catch (error) {
+    console.error('입금자명 수정 오류:', error);
+
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return res.status(400).json({
+        message: '입력 정보를 확인해주세요',
+        errors: messages
+      });
+    }
+
+    res.status(500).json({ message: '서버 오류가 발생했습니다' });
+  }
+});
+
 // @desc    현재 로그인된 사용자 정보 조회
 // @route   GET /api/auth/me
 // @access  Private

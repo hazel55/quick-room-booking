@@ -163,7 +163,7 @@ const Rooms = () => {
 
   const openReservationModal = (room) => {
     if (!hasDepositorName && /^[0-9]+$/.test(user.grade)) {
-      setError('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다. 회원가입 시 입금자 이름을 입력했는지 확인해주세요.');
+      setError('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다. 메인 대시보드에서 입금자명을 등록해주세요.');
       return;
     }
 
@@ -379,7 +379,7 @@ const Rooms = () => {
           <div className="alert alert-error">
             <span>
               입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다.
-              회원가입 시 입금자 이름을 입력했는지 확인해주세요.
+              메인 대시보드에서 입금자명을 확인하고 등록해주세요.
             </span>
           </div>
         )}
