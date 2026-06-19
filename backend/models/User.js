@@ -167,6 +167,11 @@ const UserSchema = new mongoose.Schema({
       '인도자 이름을 입력해주세요'
     ]
   },
+  depositorName: {
+    type: String,
+    trim: true,
+    maxlength: [50, '입금자 이름은 50자를 초과할 수 없습니다']
+  },
   specialRequests: {
     type: String,
     maxlength: [500, '특별 요청사항은 500자를 초과할 수 없습니다']

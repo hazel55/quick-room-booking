@@ -21,7 +21,9 @@ const Register = () => {
     privacyConsent: false,
     retreatConsent: false,
     specialRequests: '',
-    guideName: ''
+    guideName: '',
+    depositorName: '',
+    depositeYn: ''
   });
   
   const [ssnDisplay, setSsnDisplay] = useState(''); // 마스킹된 주민번호 표시용
@@ -55,7 +57,11 @@ const Register = () => {
     if (name === 'classNumber' && value !== 'G') {
       updatedFormData.guideName = '';
     }
-    
+
+    if (name === 'depositeYn' && value !== 'Y') {
+      updatedFormData.depositorName = '';
+    }
+
     setFormData(updatedFormData);
     
     // 해당 필드의 에러 제거
@@ -436,7 +442,21 @@ const Register = () => {
       }
     }
 
-    // 성별 검증
+    // 입금 여부 검증
+    if (!formData.depositeYn) {
+      newErrors.depositeYn = '입금 여부를 선택해주세요';
+    }
+
+    // 입금 완료시 입금자명 필수
+    if (formData.depositeYn === 'Y' && !formData.depositorName.trim()) {
+      newErrors.depositorName = '입금자 이름을 입력해주세요';
+    }
+
+    // 미입금시 회원가입 불가
+    if (formData.depositeYn === 'N') {
+      newErrors.depositeYn = '입금 전에는 회원가입이 불가능합니다.';
+    }
+    // 성별 검증  
     if (!formData.gender) {
       newErrors.gender = '성별을 선택해주세요';
     }
@@ -466,6 +486,13 @@ const Register = () => {
     // 수련회 서약서 동의 검증
     if (!formData.retreatConsent) {
       newErrors.retreatConsent = '수련회 참가 서약서에 동의해주세요';
+    }
+
+    // 입금자 이름 검증
+    if (formData.depositeYn === 'Y' && !formData.depositorName.trim()) {
+      newErrors.depositorName = '입금자 이름을 입력해주세요';
+    } else if (formData.depositeYn === 'Y' && formData.depositorName.trim().length < 2) {
+      newErrors.depositorName = '입금자 이름은 2자 이상 입력해주세요';
     }
 
     setErrors(newErrors);
@@ -679,9 +706,8 @@ const Register = () => {
                     <div>
                       <h4 className="font-semibold text-blue-800">7. 교역자 연락처</h4>
                        <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li>김성은 강도사: 010-7189-3068</li>
-                        <li>장예찬 전도사: 010-5833-6579</li>
-                        <li>부장 문병필 집사: 010-9119-8837</li>
+                        <li>김성은 목사: 010-7189-3068</li>
+                        <li>부장 권기열 선생님: 010-6235-2893</li>
                       </ul>
                     </div>
                   </div>
@@ -903,6 +929,45 @@ const Register = () => {
                     {renderError('guideName')}
                   </div>
                 )}
+              </fieldset>
+
+              {/* 입금 정보 */}
+              <fieldset className="space-y-4">
+                <legend className="text-lg font-semibold text-gray-900">회비 납부 정보</legend>
+                <div>
+                  <label htmlFor="depositeYn" className="block text-sm font-semibold text-gray-700 mb-1">
+                    입금 여부 <span className="text-red-600">*</span>
+                  </label>
+                  <select id="depositeYn" name="depositeYn" value={formData.depositeYn} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                    <option value="">선택</option>
+                    <option value="Y">입금완료</option>
+                    <option value="N">미입금</option>
+
+                  </select>
+                  {renderError('depositeYn')}
+                </div>
+                {formData.depositeYn === 'Y' && (
+                  
+                <div>
+                  <label htmlFor="depositorName" className="block text-sm font-semibold text-gray-700 mb-1">
+                    입금자명(입금 완료 후 입력해주세요.) <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="depositorName"
+                    name="depositorName"
+                    type="text"
+                    value={formData.depositorName}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    placeholder="예) 1-1 홍길동"
+                    maxLength="50"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    수련회비 입금 시 사용한 이름을 입력해주세요. (예: 홍길동 엄마, 1-1 홍길동)
+                  </p>
+                  {renderError('depositorName')}
+                </div>
+              )}
               </fieldset>
 
               {/* 보호자 정보 */}

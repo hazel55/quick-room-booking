@@ -426,13 +426,13 @@ const AdminDashboard = () => {
     const csvData = filteredUsers.map(user => ({
       이름: user.name,
       이메일: user.email,
-      전화번호: user.formattedPhone || user.phone,
+      전화번호: user.formattedPhone || user.phone, 
+      입금자명: user.depositorName || '-',   
       보호자전화번호: user.formattedGuardianPhone || user.guardianPhone,
-      비상연락처: user.formattedEmergencyPhone || user.emergencyPhone,
       주민등록번호: user.ssn || '정보없음',
       학년: user.grade === 'T' ? '선생님' : user.grade === 'A' ? '관리자' : `${user.grade}학년`,
       반: formatClassNumber(user.classNumber),
-      인도자이름: user.guideName || '',
+      인도자: user.guideName || '',
       성별: user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender,
       보호자연락처: user.formattedGuardianPhone || user.guardianPhone || '미등록',
       배정방: user.roomAssignment?.roomNumber || '미배정',
@@ -740,6 +740,9 @@ const AdminDashboard = () => {
                         성별
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                        입금자명
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
                         보호자연락처
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
@@ -827,6 +830,11 @@ const AdminDashboard = () => {
                             }`}>
                               {user.gender === 'M' ? ' 남성' : ' 여성'}
                             </span>
+                          </td>
+                          
+                          {/* 입금자 이름 */}
+                          <td className="px-4 py-3 border-r border-gray-300 text-sm font-medium text-gray-900">
+                            {user.depositorName}
                           </td>
 
                           {/* 보호자 연락처 */}

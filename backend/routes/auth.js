@@ -47,6 +47,11 @@ router.post('/register', [
     return true;
   }),
   body('guideName').if(body('classNumber').equals('G')).notEmpty().trim().withMessage('인도자 이름을 입력해주세요'),
+  //body('depositorName', '입금자 이름을 입력해주세요')
+  //  .notEmpty()
+  //  .trim()
+  //  .isLength({ min: 2, max: 50 })
+  //  .withMessage('입금자 이름은 2자 이상 50자 이하로 입력해주세요'),
   body('gender', '성별을 선택해주세요').isIn(['M', 'F']),
   body('ssn', '주민등록번호를 입력해주세요').custom((value, { req }) => {
     if (!value || !validateSSN(value)) {
@@ -87,7 +92,8 @@ router.post('/register', [
       privacyConsent,
       retreatConsent,
       specialRequests,
-      guideName
+      guideName,
+      depositorName
     } = req.body;
 
     // 이미 존재하는 사용자인지 확인 (이메일 및 주민등록번호)
@@ -131,6 +137,7 @@ router.post('/register', [
       privacyConsent,
       retreatConsent,
       specialRequests,
+      depositorName: depositorName.trim(),
       ...(classNumber === 'G' && guideName ? { guideName: guideName.trim() } : {})
     });
 
@@ -151,7 +158,8 @@ router.post('/register', [
         role: user.role,
         adminAccess: user.adminAccess,
         roomAssignment: user.roomAssignment,
-        guardianRelationship: user.guardianRelationship
+        guardianRelationship: user.guardianRelationship,
+        depositorName: user.depositorName
       }
     });
 
@@ -218,7 +226,8 @@ router.post('/login', [
         gender: user.gender,
         role: user.role,
         adminAccess: user.adminAccess,
-        roomAssignment: user.roomAssignment
+        roomAssignment: user.roomAssignment,
+        depositorName: user.depositorName
       }
     });
 
@@ -248,7 +257,8 @@ router.get('/me', protect, async (req, res) => {
         adminAccess: user.adminAccess,
         roomAssignment: user.roomAssignment,
         emergencyContact: user.emergencyContact,
-        specialRequests: user.specialRequests
+        specialRequests: user.specialRequests,
+        depositorName: user.depositorName
       }
     });
   } catch (error) {

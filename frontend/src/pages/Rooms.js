@@ -37,6 +37,8 @@ const Rooms = () => {
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [specialRequests, setSpecialRequests] = useState('');
 
+  const hasDepositorName = Boolean(user?.depositorName?.trim());
+
   useEffect(() => {
     fetchRooms();
     fetchReservationSettings();
@@ -160,6 +162,11 @@ const Rooms = () => {
   };
 
   const openReservationModal = (room) => {
+    if (!hasDepositorName) {
+      setError('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다. 회원가입 시 입금자 이름을 입력했는지 확인해주세요.');
+      return;
+    }
+
     // 예약 오픈 시간 확인 (실제 예약 시에만 체크)
     if (!isReservationOpen && room.availableBeds > 0) {
       if (reservationSettings) {
@@ -209,6 +216,11 @@ const Rooms = () => {
   };
 
   const handleReservation = async () => {
+    if (!hasDepositorName) {
+      setError('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다.');
+      return;
+    }
+
     if (!selectedBed) {
       setError('번호를 선택해주세요.');
       return;
@@ -360,6 +372,15 @@ const Rooms = () => {
           <div className="alert alert-success">
             <span>{success}</span>
             <button onClick={() => setSuccess('')} className="alert-close">×</button>
+          </div>
+        )}
+
+        {!hasDepositorName && (
+          <div className="alert alert-error">
+            <span>
+              입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다.
+              회원가입 시 입금자 이름을 입력했는지 확인해주세요.
+            </span>
           </div>
         )}
 
