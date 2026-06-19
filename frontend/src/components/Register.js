@@ -20,7 +20,8 @@ const Register = () => {
     ssn: '',
     privacyConsent: false,
     retreatConsent: false,
-    specialRequests: ''
+    specialRequests: '',
+    guideName: ''
   });
   
   const [ssnDisplay, setSsnDisplay] = useState(''); // 마스킹된 주민번호 표시용
@@ -32,30 +33,43 @@ const Register = () => {
 
   // 컴포넌트 마운트 시 마감 알림 표시
   useEffect(() => {
-    const showClosedAlert = () => {
-      alert('더사랑의교회 고등부 수련회 신청이 마감되었습니다.\n\n관련 문의:\n• 고등부 김성은 강도사 (010-7189-3068)\n• 부장 문병필 선생님 (010-9119-8837)');
-      navigate('/login');
-    };
+    //const showClosedAlert = () => {
+    //  alert('더사랑의교회 고등부 수련회 신청이 마감되었습니다.\n\n관련 문의:\n• 고등부 김성은 목사 (010-7189-3068)\n• 부장 권기열 선생님 (010-6235-2893)');
+    //  navigate('/login');
+    //};
 
     // 약간의 지연을 두어 컴포넌트가 완전히 마운트된 후 알림 표시
-    const timer = setTimeout(showClosedAlert, 100);
+    //const timer = setTimeout(showClosedAlert, 100);
     
-    return () => clearTimeout(timer);
+    //return () => clearTimeout(timer);
   }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    setFormData({
+    const updatedFormData = {
       ...formData,
       [name]: type === 'checkbox' ? checked : value
-    });
+    };
+
+    if (name === 'classNumber' && value !== 'G') {
+      updatedFormData.guideName = '';
+    }
+    
+    setFormData(updatedFormData);
     
     // 해당 필드의 에러 제거
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: ''
+      });
+    }
+    if (name === 'classNumber' && value !== 'G' && errors.guideName) {
+      setErrors({
+        ...errors,
+        [name]: '',
+        guideName: ''
       });
     }
   };
@@ -408,6 +422,18 @@ const Register = () => {
     // 반 검증 (학생인 경우에만)
     if (['1', '2', '3'].includes(formData.grade) && !formData.classNumber) {
       newErrors.classNumber = '반을 선택해주세요';
+    }
+
+    // 비출석(게스트)인 경우 인도자 이름 필수
+    if (formData.classNumber === 'G') {
+      if (!formData.guideName.trim()) {
+        newErrors.guideName = '인도자 이름을 입력해주세요';
+      } else {
+        const guideNameValidation = validateName(formData.guideName);
+        if (!guideNameValidation.isValid) {
+          newErrors.guideName = guideNameValidation.message;
+        }
+      }
     }
 
     // 성별 검증
@@ -827,7 +853,8 @@ const Register = () => {
                       {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
                         <option key={n} value={n}>{n}반</option>
                       ))}
-                      <option value="N">새가족/미배정</option>
+                      <option value="N">새가족반</option>
+                      <option value="G">비출석(게스트)</option>
                     </select>
                     {renderError('classNumber')}
                   </div>
@@ -858,6 +885,24 @@ const Register = () => {
                     {renderError('gender')}
                   </div>
                 </div>
+                {formData.classNumber === 'G' && (
+                  <div>
+                    <label htmlFor="guideName" className="block text-sm font-semibold text-gray-700 mb-1">
+                      인도자 이름 <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      id="guideName"
+                      name="guideName"
+                      type="text"
+                      value={formData.guideName}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                      placeholder="인도자 이름을 입력해주세요"
+                      maxLength="50"
+                    />
+                    {renderError('guideName')}
+                  </div>
+                )}
               </fieldset>
 
               {/* 보호자 정보 */}
@@ -929,7 +974,7 @@ const Register = () => {
               <div className="pt-5">
                 <button
                   type="submit"
-                  disabled={true}
+                  disabled={loading}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   {loading ? (

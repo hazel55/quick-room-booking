@@ -82,7 +82,7 @@ const UserSchema = new mongoose.Schema({
         }
         
         // 'N' (새가족/미배정) 허용
-        if (value === 'N') {
+        if (value === 'N' || value === 'G') {
           return true;
         }
         
@@ -90,7 +90,7 @@ const UserSchema = new mongoose.Schema({
         const num = parseInt(value);
         return !isNaN(num) && num >= 1 && num <= 10;
       },
-      message: '반은 1에서 10 사이의 숫자이거나 새가족/미배정이어야 합니다.'
+      message: '반을 선택해주세요.'
     }
   },
   gender: {
@@ -157,6 +157,15 @@ const UserSchema = new mongoose.Schema({
       },
       message: '수련회 참가 서약서에 동의해주세요'
     }
+  },
+  guideName: {
+    type: String,
+    trim: true,
+    maxlength: [50, '인도자 이름은 50자를 초과할 수 없습니다'],
+    required: [
+      function() { return this.classNumber === 'G'; },
+      '인도자 이름을 입력해주세요'
+    ]
   },
   specialRequests: {
     type: String,
