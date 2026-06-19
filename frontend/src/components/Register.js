@@ -678,11 +678,11 @@ const Register = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">2. 출발일 집결 시간 및 장소</h4>
-                      <p className="pl-4">8월 7일(금) 오전 9시 본당 지하1층 드림홀에 모여 출발합니다.</p>
+                      <p className="pl-4">8월 7일(금) 오전 9시 이음센터 7층 큰숲홀(고등부실)에 모여 출발합니다.</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">3. 8월 9일(주일) 예배 안내</h4>
-                      <p className="pl-4"><span className="font-medium">시간/장소:</span> 오전 9시 10분 / 이음센터 7층</p>
+                      <p className="pl-4"><span className="font-medium">시간/장소:</span> 오전 9시 10분 / 이음센터 7층 큰숲홀(고등부실)</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">4. 신청 및 등록</h4>
@@ -691,7 +691,7 @@ const Register = () => {
                         <li><span className="font-mediun"></span>7월 5일(주일) 가입 페이지 공유 예정</li>
                         <li><span className="font-medium">수련회비:</span> 100,000원</li>
                         <li><span className="font-medium">입금 계좌:</span> 900321-31-07689 새마을금고 김자영</li>
-                        <li className="text-xs pl-5">※ 입금하실 때, 꼭 "학년-반 이름"으로 입금해주세요. (ex. 1-1 홍길동)</li>
+                        <li className="text-xs pl-5">※ 입금하실 때, 꼭 "학년-반 이름"으로 입금해주세요. (ex. 1-1 김사랑)</li>
                         <li className="text-xs pl-5">※ 수련회 시설은 사전 계약이 이루어지므로 부분 참석 시에도 할인은 없습니다.</li>
                       </ul>
                     </div>
@@ -778,7 +778,7 @@ const Register = () => {
                     <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1">
                       이름 <span className="text-red-600">*</span>
                     </label>
-                    <input id="name" name="name" type="text" value={formData.name} onChange={handleNameChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="홍길동" />
+                    <input id="name" name="name" type="text" value={formData.name} onChange={handleNameChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="김사랑" />
                     {renderError('name')}
                   </div>
                   <div>
@@ -972,11 +972,11 @@ const Register = () => {
                     value={formData.depositorName}
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                    placeholder="예) 1-1 홍길동"
+                    placeholder="예) 1-1 김사랑"
                     maxLength="50"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    수련회비 입금 시 사용한 이름을 입력해주세요. (예: 홍길동 엄마, 1-1 홍길동)
+                    수련회비 입금 시 사용한 이름을 입력해주세요. (예: 김사랑 엄마, 1-1 김사랑)
                   </p>
                   {renderError('depositorName')}
                 </div>
