@@ -669,6 +669,8 @@ const Register = () => {
                     <div>
                       <h4 className="font-semibold text-blue-800">1. 개요</h4>
                       <ul className="list-disc list-inside pl-2 text-gray-700">
+                        <li><span className="font-medium">주제:</span> 끈질긴 은혜에 붙들린 삶</li>
+                        <li><span className="font-medium">주제 성구:</span> [창28:15] 내가 너와 함께 있어 네가 어디로 가든지 너를 지키며 너를 이끌어 이 땅으로 돌아오게 할지라 내가 네게 허락한 것을 다 이루기까지 너를 떠나지 아니하리라 하신지라</li>
                         <li><span className="font-medium">일정:</span> 2026년 8월 7일(금) ~ 9일(주일)</li>
                         <li className="text-xs pl-5">※ 주일 예배는 고등부실에서 드립니다.</li>
                         <li><span className="font-medium">장소:</span> 용인 대웅경영개발원 (경기도 용인시 처인구 두계로 72)</li>
@@ -709,9 +711,9 @@ const Register = () => {
                       수련회 회비는 숙소, 차량, 식사 및 프로그램 운영을 위해 사전에 집행됩니다. 수련회 7일 전부터는 수련회장과 인원 확정 및 계약이 완료되어 취소에 따른 환불이 제한되기에 위 기준으로 진행하는 점 양해 부탁드립니다. 
                       </p>
                        <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li>~7/31까지 : 100% 환불</li>
-                        <li>8/1~8/5  : 50% 환불</li>
-                        <li>8/6~     : 환불 불가</li>
+                        <li>~7/31까지&nbsp;&nbsp;: 100% 환불</li>
+                        <li>8/1~8/5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 50% 환불</li>
+                        <li>8/6~&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 환불 불가</li>
                       </ul>
                     </div>
                     <div>
