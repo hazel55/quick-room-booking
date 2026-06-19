@@ -7,6 +7,13 @@ import * as XLSX from 'xlsx';
 import './Modal.css';
 import '../styles/dashboard.css';
 
+const formatClassNumber = (classNumber) => {
+  if (classNumber === 'N') return '새가족반';
+  if (classNumber === 'G') return '비출석(게스트)';
+  if (classNumber) return `${classNumber}반`;
+  return '';
+};
+
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -430,12 +437,13 @@ const AdminDashboard = () => {
     const csvData = filteredUsers.map(user => ({
       이름: user.name,
       이메일: user.email,
-      전화번호: user.formattedPhone || user.phone,
+      전화번호: user.formattedPhone || user.phone, 
+      입금자명: user.depositorName || '-',   
       보호자전화번호: user.formattedGuardianPhone || user.guardianPhone,
-      비상연락처: user.formattedEmergencyPhone || user.emergencyPhone,
       주민등록번호: user.ssn || '정보없음',
       학년: user.grade === 'T' ? '선생님' : user.grade === 'A' ? '관리자' : `${user.grade}학년`,
-      반: user.classNumber,
+      반: formatClassNumber(user.classNumber),
+      인도자: user.guideName || '',
       성별: user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : user.gender,
       보호자연락처: user.formattedGuardianPhone || user.guardianPhone || '미등록',
       배정방: user.roomAssignment?.roomNumber || '미배정',
@@ -866,7 +874,13 @@ const AdminDashboard = () => {
                         성별
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                        입금자명
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
                         보호자연락처
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                        인도자
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r border-gray-300">
                         배정방
@@ -882,7 +896,7 @@ const AdminDashboard = () => {
                   <tbody className="bg-white divide-y divide-gray-100">
                     {loading ? (
                       <tr>
-                        <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
+                        <td colSpan="10" className="px-6 py-8 text-center text-gray-500">
                           <div className="flex items-center justify-center space-x-2">
                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
                             <span>로딩 중...</span>
@@ -891,7 +905,7 @@ const AdminDashboard = () => {
                       </tr>
                     ) : users.length === 0 ? (
                       <tr>
-                        <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
+                        <td colSpan="10" className="px-6 py-8 text-center text-gray-500">
                           <div className="text-center">
                             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
@@ -932,8 +946,12 @@ const AdminDashboard = () => {
                                  `${user.grade}학년`}
                               </span>
                               {user.classNumber && (
-                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                  {user.classNumber}반
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  user.classNumber === 'G' ? 'bg-orange-100 text-orange-800' :
+                                  user.classNumber === 'N' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {formatClassNumber(user.classNumber)}
                                 </span>
                               )}
                             </div>
@@ -947,12 +965,22 @@ const AdminDashboard = () => {
                               {user.gender === 'M' ? ' 남성' : ' 여성'}
                             </span>
                           </td>
+                          
+                          {/* 입금자 이름 */}
+                          <td className="px-4 py-3 border-r border-gray-300 text-sm font-medium text-gray-900">
+                            {user.depositorName}
+                          </td>
 
                           {/* 보호자 연락처 */}
                           <td className="px-4 py-3 border-r border-gray-300 text-sm text-gray-900">
                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
                               {user.formattedGuardianPhone || user.guardianPhone || '미등록'}
                             </span>
+                          </td>
+
+                          {/* 인도자 */}
+                          <td className="px-4 py-3 border-r border-gray-300 text-sm text-gray-900">
+                            {user.guideName || '-'}
                           </td>
 
                           {/* 배정방 */}

@@ -20,7 +20,10 @@ const Register = () => {
     ssn: '',
     privacyConsent: false,
     retreatConsent: false,
-    specialRequests: ''
+    specialRequests: '',
+    guideName: '',
+    depositorName: '',
+    depositeYn: ''
   });
   
   const [ssnDisplay, setSsnDisplay] = useState(''); // 마스킹된 주민번호 표시용
@@ -32,30 +35,47 @@ const Register = () => {
 
   // 컴포넌트 마운트 시 마감 알림 표시
   useEffect(() => {
-    const showClosedAlert = () => {
-      alert('더사랑의교회 고등부 수련회 신청이 마감되었습니다.\n\n관련 문의:\n• 고등부 김성은 강도사 (010-7189-3068)\n• 부장 문병필 선생님 (010-9119-8837)');
-      navigate('/login');
-    };
+    //const showClosedAlert = () => {
+    //  alert('더사랑의교회 고등부 수련회 신청이 마감되었습니다.\n\n관련 문의:\n• 고등부 김성은 목사 (010-7189-3068)\n• 부장 권기열 선생님 (010-6235-2893)');
+    //  navigate('/login');
+    //};
 
     // 약간의 지연을 두어 컴포넌트가 완전히 마운트된 후 알림 표시
-    const timer = setTimeout(showClosedAlert, 100);
+    //const timer = setTimeout(showClosedAlert, 100);
     
-    return () => clearTimeout(timer);
+    //return () => clearTimeout(timer);
   }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    setFormData({
+    const updatedFormData = {
       ...formData,
       [name]: type === 'checkbox' ? checked : value
-    });
+    };
+
+    if (name === 'classNumber' && value !== 'G') {
+      updatedFormData.guideName = '';
+    }
+
+    if (name === 'depositeYn' && value !== 'Y') {
+      updatedFormData.depositorName = '';
+    }
+
+    setFormData(updatedFormData);
     
     // 해당 필드의 에러 제거
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: ''
+      });
+    }
+    if (name === 'classNumber' && value !== 'G' && errors.guideName) {
+      setErrors({
+        ...errors,
+        [name]: '',
+        guideName: ''
       });
     }
   };
@@ -410,7 +430,33 @@ const Register = () => {
       newErrors.classNumber = '반을 선택해주세요';
     }
 
-    // 성별 검증
+    // 비출석(게스트)인 경우 인도자 이름 필수
+    if (formData.classNumber === 'G') {
+      if (!formData.guideName.trim()) {
+        newErrors.guideName = '인도자 이름을 입력해주세요';
+      } else {
+        const guideNameValidation = validateName(formData.guideName);
+        if (!guideNameValidation.isValid) {
+          newErrors.guideName = guideNameValidation.message;
+        }
+      }
+    }
+
+    // 입금 여부 검증
+    if (!formData.depositeYn) {
+      newErrors.depositeYn = '입금 여부를 선택해주세요';
+    }
+
+    // 입금 완료시 입금자명 필수
+    if (formData.depositeYn === 'Y' && !formData.depositorName.trim()) {
+      newErrors.depositorName = '입금자 이름을 입력해주세요';
+    }
+
+    // 미입금시 회원가입 불가
+    if (formData.depositeYn === 'N') {
+      newErrors.depositeYn = '입금 전에는 회원가입이 불가능합니다.';
+    }
+    // 성별 검증  
     if (!formData.gender) {
       newErrors.gender = '성별을 선택해주세요';
     }
@@ -440,6 +486,13 @@ const Register = () => {
     // 수련회 서약서 동의 검증
     if (!formData.retreatConsent) {
       newErrors.retreatConsent = '수련회 참가 서약서에 동의해주세요';
+    }
+
+    // 입금자 이름 검증
+    if (formData.depositeYn === 'Y' && !formData.depositorName.trim()) {
+      newErrors.depositorName = '입금자 이름을 입력해주세요';
+    } else if (formData.depositeYn === 'Y' && formData.depositorName.trim().length < 2) {
+      newErrors.depositorName = '입금자 이름은 2자 이상 입력해주세요';
     }
 
     setErrors(newErrors);
@@ -591,7 +644,7 @@ const Register = () => {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            2025년 더사랑의교회 고등부 여름 수련회
+            2026년 더사랑의교회 고등부 여름 수련회
           </h2>
           <p className="mt-3 text-base text-gray-500">
             수련회 참가 신청과 회원가입을 해주세요.
@@ -616,28 +669,30 @@ const Register = () => {
                     <div>
                       <h4 className="font-semibold text-blue-800">1. 개요</h4>
                       <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li><span className="font-medium">일정:</span> 2025년 8월 1일(금) ~ 3일(주일)</li>
+                        <li><span className="font-medium">주제:</span> 끈질긴 은혜에 붙들린 삶</li>
+                        <li><span className="font-medium">주제 성구:</span> [창28:15] 내가 너와 함께 있어 네가 어디로 가든지 너를 지키며 너를 이끌어 이 땅으로 돌아오게 할지라 내가 네게 허락한 것을 다 이루기까지 너를 떠나지 아니하리라 하신지라</li>
+                        <li><span className="font-medium">일정:</span> 2026년 8월 7일(금) ~ 9일(주일)</li>
                         <li className="text-xs pl-5">※ 주일 예배는 고등부실에서 드립니다.</li>
                         <li><span className="font-medium">장소:</span> 용인 대웅경영개발원 (경기도 용인시 처인구 두계로 72)</li>
                       </ul>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">2. 출발일 집결 시간 및 장소</h4>
-                      <p className="pl-4">8월 1일(금) 오전 9시 본당 지하1층 드림홀에 모여 출발합니다.</p>
+                      <p className="pl-4">8월 7일(금) 오전 9시 이음센터 7층 큰숲홀(고등부실)에 모여 출발합니다.</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-800">3. 8월 3일(주일) 예배 안내</h4>
-                      <p className="pl-4"><span className="font-medium">시간/장소:</span> 오전 9시 20분 / 이음센터 7층</p>
+                      <h4 className="font-semibold text-blue-800">3. 8월 9일(주일) 예배 안내</h4>
+                      <p className="pl-4"><span className="font-medium">시간/장소:</span> 오전 9시 10분 / 이음센터 7층 큰숲홀(고등부실)</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">4. 신청 및 등록</h4>
                       <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li><span className="font-medium">신청기간:</span> 7월 5일 오후 5시까지 링크를 통해 신청</li>
+                        <li><span className="font-medium">신청기간:</span> 7월 12일 오전 11시 30분에 선착순으로 방을 신청합니다.</li>
+                        <li><span className="font-mediun"></span>7월 5일(주일) 가입 페이지 공유 예정</li>
                         <li><span className="font-medium">수련회비:</span> 100,000원</li>
-                        <li><span className="font-medium">입금 계좌:</span> 3333-23-6992886 카카오뱅크 (주연진)</li>
-                        <li className="text-xs pl-5">※ 입금하실 때, 꼭 "학년-반 이름"으로 입금해주세요. (ex. 1-1 홍길동)</li>
+                        <li><span className="font-medium">입금 계좌:</span> 900321-31-07689 새마을금고 김자영</li>
+                        <li className="text-xs pl-5">※ 입금하실 때, 꼭 "학년-반 이름"으로 입금해주세요. (ex. 1-1 김사랑)</li>
                         <li className="text-xs pl-5">※ 수련회 시설은 사전 계약이 이루어지므로 부분 참석 시에도 할인은 없습니다.</li>
-                        <li className="text-xs pl-5">※ 7월 6일 오전 11시 30분에 선착순으로 방을 신청합니다.</li>
                       </ul>
                     </div>
                     <div>
@@ -646,16 +701,26 @@ const Register = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold text-blue-800">6. 후원 방법</h4>
-                      <li className="text-xs pl-5">후원을 원하시는 가정은 국민은행 992-76-799147 (더사랑의교회)로 입금해 주시면 감사하겠습니다.</li>
+                      <li className="list-disc list-inside pl-2 text-gray-700">후원을 원하시는 가정은 국민은행 992-76-799147 (더사랑의교회)로 입금해 주시면 감사하겠습니다.</li>
                       <p className="pl-4">입금시 '이름+생년월+후원부서'로 기재해 주시면 됩니다. 
                         예) 김사랑C9012고등</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-800">7. 교역자 연락처</h4>
+                      <h4 className="font-semibold text-blue-800">7. 회비 환불 안내</h4>
+                      <p className="pl-4">
+                      수련회 회비는 숙소, 차량, 식사 및 프로그램 운영을 위해 사전에 집행됩니다. 수련회 7일 전부터는 수련회장과 인원 확정 및 계약이 완료되어 취소에 따른 환불이 제한되기에 위 기준으로 진행하는 점 양해 부탁드립니다. 
+                      </p>
                        <ul className="list-disc list-inside pl-2 text-gray-700">
-                        <li>김성은 강도사: 010-7189-3068</li>
-                        <li>장예찬 전도사: 010-5833-6579</li>
-                        <li>부장 문병필 집사: 010-9119-8837</li>
+                        <li>~7/31까지&nbsp;&nbsp;: 100% 환불</li>
+                        <li>8/1~8/5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 50% 환불</li>
+                        <li>8/6~&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 환불 불가</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">8. 교역자 연락처</h4>
+                      <ul className="list-disc list-inside pl-2 text-gray-700">
+                        <li>김성은 목사: 010-7189-3068</li>
+                        <li>부장 권기열 선생님: 010-6235-2893</li>  
                       </ul>
                     </div>
                   </div>
@@ -713,7 +778,7 @@ const Register = () => {
                     <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1">
                       이름 <span className="text-red-600">*</span>
                     </label>
-                    <input id="name" name="name" type="text" value={formData.name} onChange={handleNameChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="홍길동" />
+                    <input id="name" name="name" type="text" value={formData.name} onChange={handleNameChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" placeholder="김사랑" />
                     {renderError('name')}
                   </div>
                   <div>
@@ -827,7 +892,8 @@ const Register = () => {
                       {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
                         <option key={n} value={n}>{n}반</option>
                       ))}
-                      <option value="N">새가족/미배정</option>
+                      <option value="N">새가족반</option>
+                      <option value="G">비출석(게스트)</option>
                     </select>
                     {renderError('classNumber')}
                   </div>
@@ -858,6 +924,63 @@ const Register = () => {
                     {renderError('gender')}
                   </div>
                 </div>
+                {formData.classNumber === 'G' && (
+                  <div>
+                    <label htmlFor="guideName" className="block text-sm font-semibold text-gray-700 mb-1">
+                      인도자 이름 <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      id="guideName"
+                      name="guideName"
+                      type="text"
+                      value={formData.guideName}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                      placeholder="인도자 이름을 입력해주세요"
+                      maxLength="50"
+                    />
+                    {renderError('guideName')}
+                  </div>
+                )}
+              </fieldset>
+
+              {/* 입금 정보 */}
+              <fieldset className="space-y-4">
+                <legend className="text-lg font-semibold text-gray-900">회비 납부 정보</legend>
+                <div>
+                  <label htmlFor="depositeYn" className="block text-sm font-semibold text-gray-700 mb-1">
+                    입금 여부 <span className="text-red-600">*</span>
+                  </label>
+                  <select id="depositeYn" name="depositeYn" value={formData.depositeYn} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                    <option value="">선택</option>
+                    <option value="Y">입금완료</option>
+                    <option value="N">미입금</option>
+
+                  </select>
+                  {renderError('depositeYn')}
+                </div>
+                {formData.depositeYn === 'Y' && (
+                  
+                <div>
+                  <label htmlFor="depositorName" className="block text-sm font-semibold text-gray-700 mb-1">
+                    입금자명(입금 완료 후 입력해주세요.) <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="depositorName"
+                    name="depositorName"
+                    type="text"
+                    value={formData.depositorName}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    placeholder="예) 1-1 김사랑"
+                    maxLength="50"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    수련회비 입금 시 사용한 이름을 입력해주세요. (예: 김사랑 엄마, 1-1 김사랑)
+                  </p>
+                  {renderError('depositorName')}
+                </div>
+              )}
               </fieldset>
 
               {/* 보호자 정보 */}
@@ -929,7 +1052,7 @@ const Register = () => {
               <div className="pt-5">
                 <button
                   type="submit"
-                  disabled={true}
+                  disabled={loading}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   {loading ? (

@@ -26,6 +26,13 @@ class ReservationServiceNoTransaction {
         throw new Error('이미 예약한 방이 있습니다. 기존 예약을 취소한 후 새로운 예약을 해주세요.');
       }
 
+      const isAdminAssignment = requestInfo.performedBy
+        && requestInfo.performedBy.toString() !== userId.toString();
+
+      if (!isAdminAssignment && (!user.depositorName || !user.depositorName.trim())) {
+        throw new Error('입금자 이름이 등록되어 있지 않아 방 예약이 불가능합니다.');
+      }
+
       // 2. 방 정보 조회 및 검증
       const room = await Room.findById(roomId);
       if (!room || !room.isActive) {
